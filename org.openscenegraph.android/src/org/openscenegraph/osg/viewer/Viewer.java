@@ -104,6 +104,12 @@ public class Viewer extends GLSurfaceView implements Native,
     protected native float native_getFusionDistance(long cptr);
     
     protected native void native_home(long cptr);
+    
+    protected native long nativeRaycastArray(long viewer_cptr, long camera_ptr, long vec2array_cptr);
+    
+    protected native long nativeRaycast(long viewer_cptr, long camera_ptr, long vec2_cptr);
+    
+    protected native long nativeRaycastViewCenter(long viewer_cptr, long camera_ptr);
 
 	public Viewer(Context context) {
 		super(context);
@@ -274,6 +280,21 @@ public class Viewer extends GLSurfaceView implements Native,
 	public synchronized void setView(Matrix mat, double distance)
 	{
 		nativeSetViewMatrixDistance(_cptr, mat.getNativePtr(),distance);
+	}
+	
+	public synchronized Vec3Array RaycastArray(Camera cam, Vec2Array points2D)
+	{
+		return new Vec3Array(nativeRaycast(_cptr, cam.getNativePtr(), points2D.getNativePtr()));
+	}
+	
+	public synchronized Vec3 Raycast(Camera cam, Vec2 point2D)
+	{
+		return new Vec3(nativeRaycast(_cptr, cam.getNativePtr(), point2D.getNativePtr()));
+	}
+	
+	public synchronized Vec3 RaycastViewCenter(Camera cam)
+	{
+		return new Vec3(nativeRaycastViewCenter(_cptr, cam.getNativePtr()))
 	}
 	
 	/**

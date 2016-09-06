@@ -355,6 +355,100 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeKeyboard(
 		v->getEventQueue()->keyRelease((osgGA::GUIEventAdapter::KeySymbol) key);
 }
 
+JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastArray(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2array_cptr)
+{
+	osg::Vec3Array* v3a = new osg::Vec3Array();
+	v3a->ref();
+
+	osgViewer::View* viewer = reinterpret_cast<osgViewer::View*>(viewer_cptr);
+	osg::Camera* cam = reinterpret_cast<osg::Camera*>(camera_ptr);
+	osg::Vec2Array* va = reinterpret_cast<osg::Vec2Array*>(vec2array_cptr);
+	osgUtil::LineSegmentIntersector::Intersections intersections;
+	for(uint i = 0; i < va->size(); i++)
+	{
+		//if(i==0)
+		//{
+			//osg::Matrixf cmat = cam->getViewMatrix();
+			//float* data = (float*)(cmat.ptr());
+			//LOGI("[%f,%f,%f,%f]",data[0],data[1],data[2],data[3]);
+			//LOGI("[%f,%f,%f,%f]",data[4],data[5],data[6],data[7]);
+			//LOGI("[%f,%f,%f,%f]",data[8],data[9],data[10],data[11]);
+			//LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
+
+			//osg::Vec3 eye, center, up;
+	    	//cam->getViewMatrixAsLookAt(eye,center,up);
+	    	//LOGI("Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
+		//}
+		viewer->computeIntersections(const_cast<const osg::Camera*>(cam), osgUtil::Intersector::WINDOW, va->at(i).x(), va->at(i).y(), intersections);
+		RefVec3 *refRes = new RefVec3();
+		if(intersections.empty() == false)
+		{
+			refRes->set(intersections.begin()->getWorldIntersectPoint().x(), intersections.begin()->getWorldIntersectPoint().y(), intersections.begin()->getWorldIntersectPoint().z());
+		}
+		else
+		{
+			refRes->set(DBL_MAX,DBL_MAX,DBL_MAX);
+		}
+		refRes->ref();
+		v3a->push_back(*refRes);
+	}
+
+	return reinterpret_cast<jlong>(v3a);
+}
+
+JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycast(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2_cptr)
+{
+	RefVec3 *v3 = new RefVec3();
+	v3->ref();
+	//osg::Vec3Array* v3a = new osg::Vec3Array();
+	//v3a->ref();
+
+	osgViewer::View* viewer = reinterpret_cast<osgViewer::View*>(viewer_cptr);
+	osg::Camera* cam = reinterpret_cast<osg::Camera*>(camera_ptr);
+	RefVec2* v = reinterpret_cast<osg::Vec2Array*>(vec2_cptr);
+	osgUtil::LineSegmentIntersector::Intersections intersections;
+
+	viewer->computeIntersections(const_cast<const osg::Camera*>(cam), osgUtil::Intersector::WINDOW, v->x(), v->y(), intersections);
+	if(intersections.empty() == false)
+	{
+		v3->set(intersections.begin()->getWorldIntersectPoint().x(), intersections.begin()->getWorldIntersectPoint().y(), intersections.begin()->getWorldIntersectPoint().z());
+	}
+	else
+	{
+		v3->set(DBL_MAX,DBL_MAX,DBL_MAX);
+	}
+
+	return reinterpret_cast<jlong>(v3);
+}
+
+JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastViewCenter(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr)
+{
+	RefVec3 *v3 = new RefVec3();
+	v3->ref();
+	//osg::Vec3Array* v3a = new osg::Vec3Array();
+	//v3a->ref();
+
+	osgViewer::View* viewer = reinterpret_cast<osgViewer::View*>(viewer_cptr);
+	osg::Camera* cam = reinterpret_cast<osg::Camera*>(camera_ptr);
+	osg::Vec2 center;
+	osg::Viewport* viewport = cam->getViewport();
+	osg::Vec2* v = new osg::Vec2();
+	v->set(viewport->width()/2.0, viewport->height()/2.0);
+	osgUtil::LineSegmentIntersector::Intersections intersections;
+
+	viewer->computeIntersections(const_cast<const osg::Camera*>(cam), osgUtil::Intersector::WINDOW, v->x(), v->y(), intersections);
+	if(intersections.empty() == false)
+	{
+		v3->set(intersections.begin()->getWorldIntersectPoint().x(), intersections.begin()->getWorldIntersectPoint().y(), intersections.begin()->getWorldIntersectPoint().z());
+	}
+	else
+	{
+		v3->set(DBL_MAX,DBL_MAX,DBL_MAX);
+	}
+	delete v;
+	return reinterpret_cast<jlong>(v3);
+}
+
 //////////////////////////
 // osg::OffScreenViewer //
 //////////////////////////
@@ -589,18 +683,19 @@ JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeR
 	osgUtil::LineSegmentIntersector::Intersections intersections;
 	for(uint i = 0; i < va->size(); i++)
 	{
-		if(i==0)
-		{
-			osg::Matrixf cmat = cam->getViewMatrix();
-			float* data = (float*)(cmat.ptr());
-			LOGI("[%f,%f,%f,%f]",data[0],data[1],data[2],data[3]);
-			LOGI("[%f,%f,%f,%f]",data[4],data[5],data[6],data[7]);
-			LOGI("[%f,%f,%f,%f]",data[8],data[9],data[10],data[11]);
-			LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
-	    	osg::Vec3 eye, center, up;
-	    	cam->getViewMatrixAsLookAt(eye,center,up);
-	    	LOGI("Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
-		}
+		//if(i==0)
+		//{
+			//osg::Matrixf cmat = cam->getViewMatrix();
+			//float* data = (float*)(cmat.ptr());
+			//LOGI("[%f,%f,%f,%f]",data[0],data[1],data[2],data[3]);
+			//LOGI("[%f,%f,%f,%f]",data[4],data[5],data[6],data[7]);
+			//LOGI("[%f,%f,%f,%f]",data[8],data[9],data[10],data[11]);
+			//LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
+
+			//osg::Vec3 eye, center, up;
+	    	//cam->getViewMatrixAsLookAt(eye,center,up);
+	    	//LOGI("Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
+		//}
 		viewer->computeIntersections(const_cast<const osg::Camera*>(cam), osgUtil::Intersector::WINDOW, va->at(i).x(), va->at(i).y(), intersections);
 		RefVec3 *refRes = new RefVec3();
 		if(intersections.empty() == false)
