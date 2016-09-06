@@ -35,6 +35,9 @@ public class PrimitiveSet {
 	public static final int TRIANGLES = GLES11.GL_TRIANGLES;
 	public static final int TRIANGLE_STRIP = GLES11.GL_TRIANGLE_STRIP;
 	public static final int TRIANGLE_FAN = GLES11.GL_TRIANGLE_FAN;
+	public static final int QUADS = GLES11.GL_QUADS;
+	public static final int QUAD_STRIP = GLES11.QUAD_STRIP;
+	public static final int POLYGON = GLES11.POLYGON;
 	
 	private static native long nativeCreatePrimitiveSet(int type, int mode);
 	private static native void nativeDispose(long cptr);
