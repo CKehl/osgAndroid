@@ -19,6 +19,7 @@
  ---------------------------------------------------------------------------- */
 package org.openscenegraph.osg.core;
 import android.opengl.GLES11;
+import android.opengl.GLES20;
 
 public class PrimitiveSet {
 	public static final int PrimitiveType = 0;

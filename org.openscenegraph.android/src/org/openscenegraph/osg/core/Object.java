@@ -19,7 +19,7 @@
  ---------------------------------------------------------------------------- */
 package org.openscenegraph.osg.core;
 
-public class Object {
+public class Object extends java.lang.Object {
 	private static native void nativeDispose(long cptr);
 	private static native void nativeSetDataVariance(long cptr, int dv);
 	private static native int nativeGetDataVariance(long cptr);

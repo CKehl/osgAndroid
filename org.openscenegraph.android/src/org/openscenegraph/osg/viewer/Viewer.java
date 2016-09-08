@@ -27,6 +27,11 @@ import org.openscenegraph.osg.Native;
 import org.openscenegraph.osg.core.Camera;
 import org.openscenegraph.osg.core.Matrix;
 import org.openscenegraph.osg.core.Node;
+import org.openscenegraph.osg.core.Vec2;
+import org.openscenegraph.osg.core.Vec2Array;
+import org.openscenegraph.osg.core.Vec3;
+import org.openscenegraph.osg.core.Vec3Array;
+import org.openscenegraph.osg.ga.CameraManipulator;
 import org.openscenegraph.osg.ga.GUIEventAdapter;
 
 import android.content.Context;
@@ -94,6 +99,10 @@ public class Viewer extends GLSurfaceView implements Native,
 	private native void nativeFrame(long cptr);
 
 	private native long nativeGetCamera(long cptr);
+	
+	private native void nativeSetCameraManipulator(long cptr, long cmptr, boolean resetView);
+	
+	private native long nativeGetCameraManipulator(long cptr);
 	
     private native void native_setDisplaySettings(long cptr, long cptrdisplay);
 
@@ -294,7 +303,7 @@ public class Viewer extends GLSurfaceView implements Native,
 	
 	public synchronized Vec3 RaycastViewCenter(Camera cam)
 	{
-		return new Vec3(nativeRaycastViewCenter(_cptr, cam.getNativePtr()))
+		return new Vec3(nativeRaycastViewCenter(_cptr, cam.getNativePtr()));
 	}
 	
 	/**
@@ -304,6 +313,15 @@ public class Viewer extends GLSurfaceView implements Native,
 	 */
 	public Camera getCamera() {
 		return new Camera(nativeGetCamera(_cptr));
+	}
+	
+	public CameraManipulator getManipulator() {
+		return new CameraManipulator(nativeGetCameraManipulator(_cptr));
+	}
+	
+	public void setManipulator(CameraManipulator object, boolean resetView)
+	{
+		nativeSetCameraManipulator(_cptr, object.getNativePtr(), resetView);
 	}
 	
 	public static final int GLES1_CONTEXT = 0x00010001;

@@ -355,7 +355,27 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeKeyboard(
 		v->getEventQueue()->keyRelease((osgGA::GUIEventAdapter::KeySymbol) key);
 }
 
-JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastArray(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2array_cptr)
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetCameraManipulator(JNIEnv *env, jclass, jlong cptr, jlong cmptr, jboolean resetView)
+{
+	osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*>(cptr);
+	osgGA::CameraManipulator *cm = reinterpret_cast<osgGA::CameraManipulator*>(cmptr);
+	if((viewer==NULL) || (cm==NULL))
+		return;
+	viewer->setCameraManipulator(cm, ((resetView==JNI_TRUE)?true:false));
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeGetCameraManipulator(JNIEnv *env, jclass, jlong cptr)
+{
+	osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*>(cptr);
+	if(viewer==NULL)
+		return 0l;
+	osgGA::CameraManipulator *cm = viewer->getCameraManipulator();
+	cm->ref();
+	return reinterpret_cast<jlong>(cm);
+}
+
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastArray(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2array_cptr)
 {
 	osg::Vec3Array* v3a = new osg::Vec3Array();
 	v3a->ref();
@@ -396,7 +416,7 @@ JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastArr
 	return reinterpret_cast<jlong>(v3a);
 }
 
-JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycast(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2_cptr)
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycast(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2_cptr)
 {
 	RefVec3 *v3 = new RefVec3();
 	v3->ref();
@@ -405,7 +425,7 @@ JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycast(JN
 
 	osgViewer::View* viewer = reinterpret_cast<osgViewer::View*>(viewer_cptr);
 	osg::Camera* cam = reinterpret_cast<osg::Camera*>(camera_ptr);
-	RefVec2* v = reinterpret_cast<osg::Vec2Array*>(vec2_cptr);
+	RefVec2* v = reinterpret_cast<RefVec2*>(vec2_cptr);
 	osgUtil::LineSegmentIntersector::Intersections intersections;
 
 	viewer->computeIntersections(const_cast<const osg::Camera*>(cam), osgUtil::Intersector::WINDOW, v->x(), v->y(), intersections);
@@ -421,7 +441,7 @@ JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycast(JN
 	return reinterpret_cast<jlong>(v3);
 }
 
-JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastViewCenter(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr)
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastViewCenter(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr)
 {
 	RefVec3 *v3 = new RefVec3();
 	v3->ref();
@@ -672,7 +692,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
 	return reinterpret_cast<jlong>(camera);
 }
 
-JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeRaycast(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2array_cptr)
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeRaycast(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong vec2array_cptr)
 {
 	osg::Vec3Array* v3a = new osg::Vec3Array();
 	v3a->ref();
@@ -713,7 +733,7 @@ JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeR
 	return reinterpret_cast<jlong>(v3a);
 }
 
-JNICALL jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeIntersections(JNIEnv* env, jclass, jlong scene_cptr, jlong vec2array_cptr, jlong tvec_cptr, jlong rquat_cptr)
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeIntersections(JNIEnv* env, jclass, jlong scene_cptr, jlong vec2array_cptr, jlong tvec_cptr, jlong rquat_cptr)
 {
 	osg::Vec3Array* v3a = new osg::Vec3Array();
 	v3a->ref();
