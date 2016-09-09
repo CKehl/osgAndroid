@@ -30,6 +30,7 @@
 #include <osgGA/GUIEventAdapter>
 #include <osgGA/OrbitManipulator>
 #include <osgGA/CameraManipulator>
+#include <osgViewer/Viewer>
 
 #include "GLES2ShaderGenVisitor.h"
 
@@ -222,5 +223,48 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeDi
 	cm->unref();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//Touch Events
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_ViewerEventAdapter_nativeTouchBegan(JNIEnv * /*env*/, jobject /*obj*/, jlong viewer_cptr, jint index, jint state, jfloat x, jfloat y)
+{
+	osgViewer::Viewer *v = reinterpret_cast<osgViewer::Viewer*> (viewer_cptr);
+	if (v == NULL)
+		return 0;
+	osgGA::GUIEventAdapter* me = v->getEventQueue()->touchBegan(index,(osgGA::GUIEventAdapter::TouchPhase)state,x,y);
+	me->ref();
+	return reinterpret_cast<jlong>(me);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_ViewerEventAdapter_nativeTouchMoved(JNIEnv * /*env*/, jobject /*obj*/, jlong viewer_cptr, jint index, jint state, jfloat x, jfloat y)
+{
+	osgViewer::Viewer *v = reinterpret_cast<osgViewer::Viewer*> (viewer_cptr);
+	if (v == NULL)
+		return 0;
+	osgGA::GUIEventAdapter* me = v->getEventQueue()->touchMoved(index,(osgGA::GUIEventAdapter::TouchPhase)state,x,y);
+	me->ref();
+	return reinterpret_cast<jlong>(me);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_ViewerEventAdapter_nativeTouchEnded(JNIEnv * /*env*/, jobject /*obj*/, jlong viewer_cptr, jint index, jint state, jfloat x, jfloat y, jint nTaps)
+{
+	osgViewer::Viewer *v = reinterpret_cast<osgViewer::Viewer*> (viewer_cptr);
+	if (v == NULL)
+		return 0;
+	osgGA::GUIEventAdapter* me = v->getEventQueue()->touchEnded(index,(osgGA::GUIEventAdapter::TouchPhase)state,x,y,nTaps);
+	me->ref();
+	return reinterpret_cast<jlong>(me);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_ViewerEventAdapter_nativeAddTouchPoint(JNIEnv * /*env*/, jobject /*obj*/, jlong viewer_cptr, jlong eaCptr, jint index, jint state, jfloat x, jfloat y)
+{
+	osgViewer::Viewer *v = reinterpret_cast<osgViewer::Viewer*> (viewer_cptr);
+	if (v == NULL)
+		return;
+	osgGA::GUIEventAdapter* me = reinterpret_cast<osgGA::GUIEventAdapter*> (eaCptr);
+	if (me == NULL)
+		return;
+	me->addTouchPoint(index,(osgGA::GUIEventAdapter::TouchPhase)state,x,y);
+}
 
 }

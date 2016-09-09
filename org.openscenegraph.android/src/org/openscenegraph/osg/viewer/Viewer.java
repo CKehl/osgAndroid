@@ -120,13 +120,21 @@ public class Viewer extends GLSurfaceView implements Native,
     
     protected native long nativeRaycastViewCenter(long viewer_cptr, long camera_ptr);
 
+    Context _context = null;
+    
 	public Viewer(Context context) {
 		super(context);
+		_context = context;
 		//Log.w(TAG, "Creating Viewer ...");
 		// init(false, 16, 8);
 		/* create the osg viewer */
 		_cptr = nativeCreateViewer();
 	}
+	
+	//public Viewer(Viewer viewer) {
+	//	super(viewer.getContext());
+	//	_cptr = viewer.getNativePtr();
+	//}
 
 	// public Viewer(Context context, boolean translucent, int depth, int
 	// stencil) {
@@ -140,6 +148,10 @@ public class Viewer extends GLSurfaceView implements Native,
 		dispose();
 		super.finalize();
 	}
+	
+	//public Context getBaseContext() {
+	//	return _context;
+	//}
 
 	public ViewerBase asViewerBase()
 	{

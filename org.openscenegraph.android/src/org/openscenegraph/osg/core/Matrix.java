@@ -70,6 +70,8 @@ public class Matrix implements Native {
 	
 	private static native long nativeMultiply(long m1_ptr, long m2_ptr);
 	
+	private static native long nativeMultiplyVector(long cptr, long vecptr);
+	
 	private static native long nativeMultiplyScalar(long cptr, float scalar);
 	
 	private static native void nativeInPlaceMultiplyScalar(long cptr, float scalar);
@@ -122,6 +124,11 @@ public class Matrix implements Native {
 	public static Matrix multiply(Matrix lhs, Matrix rhs)
 	{
 		return new Matrix(nativeMultiply(lhs.getNativePtr(), rhs.getNativePtr()));
+	}
+	
+	public static Vec3 multiply(Matrix lhs, Vec3 rhs)
+	{
+		return new Vec3(nativeMultiplyVector(lhs.getNativePtr(), rhs.getNativePtr()));
 	}
 	
 	public Matrix clone()
