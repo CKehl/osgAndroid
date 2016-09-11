@@ -33,6 +33,8 @@ public class OrbitAroundCenterAdapter extends OrbitViewerAdapter {
 		// TODO Auto-generated constructor stub
 		_om = new OrbitManipulator(cm.getNativePtr());
 		_trackedPointer = new ArrayList<Integer>();
+		_mx = new ArrayList<Float>();
+		_my = new ArrayList<Float>();
 	}
 	
 	public void setCenter(Vec3 center) {
