@@ -37,6 +37,7 @@ public class Vec3 implements Native {
 	private static native float nativeDotProduct(long cptr, long rhs);
 	private static native long nativeCrossProduct(long cptr, long rhs);
 	private static native long nativeEscalarProduct(long cptr, float value);
+	private static native long nativeMultiplyWithMatrix(long cptr, long matptr);
 	private static native long nativeSum(long cptr, long rhs);
 	private static native long nativeSub(long cptr, long rhs);
 	private static native float nativeNormalize(long cptr);
@@ -134,6 +135,10 @@ public class Vec3 implements Native {
 	/** Multiply by scalar. */
 	public Vec3 escalarProduct(float rhs) {
 		return new Vec3(nativeEscalarProduct(_cptr,rhs));
+	}
+	
+	public Vec3 mult(Matrix lhs) {
+		return new Vec3(nativeMultiplyWithMatrix(_cptr, lhs.getNativePtr()));
 	}
 
 	/** Binary vector add. */

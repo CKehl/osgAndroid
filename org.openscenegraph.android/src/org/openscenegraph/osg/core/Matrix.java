@@ -64,7 +64,19 @@ public class Matrix implements Native {
 
 	private static native void nativePostMult(long cptr, long matrix);
 	
+	private static native long nativeAdd(long cptr, long lrhs);
+	
 	private static native void nativeMult(long cptr, long m1_ptr, long m2_ptr);
+	
+	private static native long nativeMultiply(long m1_ptr, long m2_ptr);
+	
+	private static native long nativeMultiplyVector(long cptr, long vecptr);
+	
+	private static native long nativeMultiplyScalar(long cptr, float scalar);
+	
+	private static native void nativeInPlaceMultiplyScalar(long cptr, float scalar);
+	
+	private static native long nativeSquare(long cptr);
 	
 	private static native void nativeMakeLookAt(long cptr, long eye, long center, long up);
 
@@ -107,6 +119,16 @@ public class Matrix implements Native {
 	public static Matrix scale(Vec3 scale_values)
 	{
 		return new Matrix(nativeScale(scale_values.getNativePtr()));
+	}
+	
+	public static Matrix multiply(Matrix lhs, Matrix rhs)
+	{
+		return new Matrix(nativeMultiply(lhs.getNativePtr(), rhs.getNativePtr()));
+	}
+	
+	public static Vec3 multiply(Matrix lhs, Vec3 rhs)
+	{
+		return new Vec3(nativeMultiplyVector(lhs.getNativePtr(), rhs.getNativePtr()));
 	}
 	
 	public Matrix clone()
@@ -190,6 +212,30 @@ public class Matrix implements Native {
 	public void mult(Matrix m1, Matrix m2)
 	{
 		nativeMult(_cptr, m1.getNativePtr(), m2.getNativePtr());
+	}
+	
+	/**
+	 * in-place scalar matrix multiply
+	 * @param value - scalar multiplier
+	 */
+	public void mult(float value)
+	{
+		nativeInPlaceMultiplyScalar(_cptr, value);
+	}
+	
+	public Matrix multiplyScalar(float value)
+	{
+		return new Matrix(nativeMultiplyScalar(_cptr, value));
+	}
+	
+	public Matrix square()
+	{
+		return new Matrix(nativeSquare(_cptr));
+	}
+	
+	public Matrix add(Matrix lrhs)
+	{
+		return new Matrix(nativeAdd(_cptr, lrhs.getNativePtr()));
 	}
 	
 	public void makeLookAt(Vec3 eye, Vec3 center, Vec3 up) {

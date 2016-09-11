@@ -1640,6 +1640,19 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Vec3_nativeEscalarProdu
 	return 0l;
 }
 
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Vec3_nativeMultiplyWithMatrix(JNIEnv *env, jclass, jlong cptr, jlong matptr)
+{
+	RefVec3 *v = reinterpret_cast<RefVec3 *>(cptr);
+	osg::RefMatrixf *lhs = reinterpret_cast<osg::RefMatrixf *>(matptr);
+	if((v==NULL) || (lhs==NULL))
+		return 0l;
+	osg::Vec3 res = (*lhs)*(*v);
+	RefVec3 *refRes = new RefVec3();
+	refRes->set(res);
+	refRes->ref();
+	return reinterpret_cast<jlong>(refRes);
+}
+
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Vec3_nativeSum(JNIEnv *, jclass, jlong cptr,
 		jlong lrhs)
 {
@@ -2053,6 +2066,72 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeMult(JNIEnv
 	{
 		m->mult(*m1, *m2);
 	}
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeMultiply(JNIEnv* env, jclass, jlong m1_ptr, jlong m2_ptr)
+{
+	osg::RefMatrixf *m1 = reinterpret_cast<osg::RefMatrixf *>(m1_ptr);
+	osg::RefMatrixf *m2 = reinterpret_cast<osg::RefMatrixf *>(m2_ptr);
+	if((m1!=NULL)&&(m2!=NULL))
+	{
+		osg::Matrixf resMat;
+		osg::RefMatrixf *m = new osg::RefMatrixf(resMat);
+		m->ref();
+		m->mult(*m1, *m2);
+		return reinterpret_cast<jlong>(m);
+	}
+	return 0l;
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeMultiplyVector(JNIEnv* env, jclass, jlong cptr, jlong vecptr)
+{
+	osg::RefMatrixf *lhs = reinterpret_cast<osg::RefMatrixf *>(cptr);
+	RefVec3 *v = reinterpret_cast<RefVec3 *>(vecptr);
+	if((v==NULL) || (lhs==NULL))
+		return 0l;
+	osg::Vec3 res = (*lhs)*(*v);
+	RefVec3 *refRes = new RefVec3();
+	refRes->set(res);
+	refRes->ref();
+	return reinterpret_cast<jlong>(refRes);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeMultiplyScalar(JNIEnv* env, jclass, jlong cptr, jfloat scalar)
+{
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(cptr);
+	if(m!=NULL)
+	{
+		osg::Matrixf resMat = (*m)*scalar;
+		osg::RefMatrixf *m = new osg::RefMatrixf(resMat);
+		m->ref();
+		return reinterpret_cast<jlong>(m);
+	}
+	return 0l;
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeInPlaceMultiplyScalar(JNIEnv* env, jclass, jlong cptr, jfloat scalar)
+{
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(cptr);
+	if(m!=NULL)
+	{
+		(*m)*=scalar;
+		//(*m) = (*m)*scalar;
+		//m->set(resMat)
+	}
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeSquare(JNIEnv* env, jclass, jlong mPtr)
+{
+	osg::RefMatrixf *mRef = reinterpret_cast<osg::RefMatrixf *>(mPtr);
+	if(mRef!=NULL)
+	{
+		osg::Matrixf resMat;
+		osg::RefMatrixf *m = new osg::RefMatrixf(resMat);
+		m->ref();
+		m->mult(*mRef, *mRef);
+		return reinterpret_cast<jlong>(m);
+	}
+	return 0l;
 }
 
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeSet(JNIEnv *, jclass, jlong cptr,
