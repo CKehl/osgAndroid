@@ -80,14 +80,18 @@ public class OrbitAroundCenterAdapter extends OrbitViewerAdapter {
         	}
         }
         
-		
+        Vec3 eye = new Vec3(), center = new Vec3(), up = new Vec3();
+		_om.getHomePosition(eye, center, up);
 		if(_center==null)
 			return false;
-		Vec3 viewPoint = _center.sub(_om.getCenter());
+		Vec3 viewPoint = _center.sub(eye);
 		Matrix r = new Matrix();
 		r.makeRotate(new Quat(_verticalAngle, 0, _horizontalAngle, 0));
 		Vec3 newViewPoint = viewPoint.mult(r);
-		_om.setCenter(newViewPoint);
+		Vec3 newUpVector = up.mult(r);
+		newViewPoint = newViewPoint.sum(_center);
+		//_om.setCenter(newViewPoint);
+		_om.setHomePosition(newViewPoint, center, newUpVector, false);
 		return true;
 	}
 

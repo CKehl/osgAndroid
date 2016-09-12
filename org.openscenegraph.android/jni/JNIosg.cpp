@@ -2358,6 +2358,18 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeMakeLookAt(
     }
 }
 
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGetLookAt(JNIEnv *, jclass, jlong cptr,
+		jlong cptr_eye, jlong cptr_center, jlong cptr_up)
+{
+    osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(cptr_eye);
+    RefVec3 *center = reinterpret_cast<RefVec3 *>(cptr_center);
+    RefVec3 *up = reinterpret_cast<RefVec3 *>(cptr_up);
+    if(m != 0 && eye !=0 && center != 0 && up != 0)
+    {
+        m->getLookAt(*eye,*center,*up);
+    }
+}
 
 
 /**

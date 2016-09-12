@@ -1,10 +1,13 @@
 package org.openscenegraph.osg.ga;
 
 import org.openscenegraph.osg.core.Object;
+import org.openscenegraph.osg.core.Vec3;
 
 public class CameraManipulator extends Object {
 
 	private static native void nativeDispose(long cptr);
+	private static native void nativeGetHomePosition(long cptr, long eye_ptr, long center_ptr, long up_ptr);
+	private static native void nativeSetHomePosition(long cptr, long eye_ptr, long center_ptr, long up_ptr, boolean autoComputeHomePosition);
 	
 	public CameraManipulator()
 	{
@@ -25,4 +28,11 @@ public class CameraManipulator extends Object {
 		super.finalize();
 	}
 	
+	public void getHomePosition(Vec3 eye, Vec3 center, Vec3 up) {
+		nativeGetHomePosition(_cptr, eye.getNativePtr(), center.getNativePtr(), up.getNativePtr());
+	}
+	
+	public void setHomePosition(Vec3 eye, Vec3 center, Vec3 up, boolean autoComputeHomePosition) {
+		nativeSetHomePosition(_cptr, eye.getNativePtr(), center.getNativePtr(), up.getNativePtr(), autoComputeHomePosition);
+	}
 }

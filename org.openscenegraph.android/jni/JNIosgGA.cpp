@@ -223,6 +223,35 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeDi
 	cm->unref();
 }
 
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetHomePosition(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong center_ptr, jlong up_ptr)
+{
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+    RefVec3 *center = reinterpret_cast<RefVec3 *>(center_ptr);
+    RefVec3 *up = reinterpret_cast<RefVec3 *>(up_ptr);
+    if(cm != NULL && eye !=NULL && center != NULL && up != NULL)
+    {
+    	osg::Vec3d eyeD, centerD, upD;
+        cm->getHomePosition(eyeD, centerD, upD);
+        eye->set(eyeD.x(), eyeD.y(), eyeD.z());
+        center->set(centerD.x(), centerD.y(), centerD.z());
+        up->set(upD.x(), upD.y(), upD.z());
+    }
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeSetHomePosition(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong center_ptr, jlong up_ptr, jboolean autoComputeHomePosition)
+{
+	bool _autoComputeHomePosition = ((autoComputeHomePosition==JNI_TRUE)?true:false);
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+    RefVec3 *center = reinterpret_cast<RefVec3 *>(center_ptr);
+    RefVec3 *up = reinterpret_cast<RefVec3 *>(up_ptr);
+    if(cm != NULL && eye !=NULL && center != NULL && up != NULL)
+    {
+        cm->setHomePosition(*eye,*center,*up, _autoComputeHomePosition);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //Touch Events
 ///////////////////////////////////////////////////////////////////////////////

@@ -79,6 +79,8 @@ public class Matrix implements Native {
 	private static native long nativeSquare(long cptr);
 	
 	private static native void nativeMakeLookAt(long cptr, long eye, long center, long up);
+	
+	private static native void nativeGetLookAt(long cptr, long eye, long center, long up);
 
 	private long _cptr;
 
@@ -240,6 +242,10 @@ public class Matrix implements Native {
 	
 	public void makeLookAt(Vec3 eye, Vec3 center, Vec3 up) {
 		nativeMakeLookAt(_cptr, eye.getNativePtr(), center.getNativePtr(), up.getNativePtr());
+	}
+	
+	public void getLookAt(Vec3 eye, Vec3 center, Vec3 up) {
+		nativeGetLookAt(_cptr, eye.getNativePtr(), center.getNativePtr(), up.getNativePtr());
 	}
 	
 	@Override
