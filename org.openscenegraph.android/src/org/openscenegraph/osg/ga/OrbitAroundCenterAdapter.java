@@ -8,6 +8,7 @@ import org.openscenegraph.osg.core.Quat;
 import org.openscenegraph.osg.core.Vec3;
 import org.openscenegraph.osg.viewer.Viewer;
 
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -82,6 +83,9 @@ public class OrbitAroundCenterAdapter extends OrbitViewerAdapter {
         
         Vec3 eye = new Vec3(), center = new Vec3(), up = new Vec3();
 		_om.getHomePosition(eye, center, up);
+		Log.d("OrbitAroundCenterAdapter", "Eye: "+eye.toString());
+		Log.d("OrbitAroundCenterAdapter", "Center: "+center.toString());
+		Log.d("OrbitAroundCenterAdapter", "Up: "+up.toString());
 		if(_center==null)
 			return false;
 		Vec3 viewPoint = _center.sub(eye);
@@ -92,6 +96,9 @@ public class OrbitAroundCenterAdapter extends OrbitViewerAdapter {
 		newViewPoint = newViewPoint.sum(_center);
 		//_om.setCenter(newViewPoint);
 		_om.setHomePosition(newViewPoint, center, newUpVector, false);
+		Log.d("OrbitAroundCenterAdapter", "Eye (new): "+newViewPoint.toString());
+		Log.d("OrbitAroundCenterAdapter", "Center (new): "+center.toString());
+		Log.d("OrbitAroundCenterAdapter", "Up (new): "+newUpVector.toString());
 		return true;
 	}
 
