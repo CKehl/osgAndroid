@@ -29,6 +29,7 @@
 #include <osg/Matrixf>
 #include <osgGA/GUIEventAdapter>
 #include <osgGA/OrbitManipulator>
+#include <osgGA/FirstPersonManipulator>
 #include <osgGA/CameraManipulator>
 #include <osgViewer/Viewer>
 
@@ -205,6 +206,14 @@ JNIEXPORT jdouble JNICALL Java_org_openscenegraph_osg_ga_OrbitManipulator_native
 		return 0;
 	return om->getDistance();
 }
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
+{
+	osgGA::FirstPersonManipulator* fpm = new osgGA::FirstPersonManipulator();
+	fpm->ref();
+	return reinterpret_cast<jlong>(fpm);
+}
+
 
 /*
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeCreateManipulator(JNIEnv *env, jclass)

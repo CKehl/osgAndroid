@@ -5,6 +5,7 @@ import org.openscenegraph.osg.core.Quat;
 import org.openscenegraph.osg.core.Vec3;
 
 public class OrbitManipulator extends CameraManipulator {
+	private static native long nativeCreateManipulator();
 	private static native void nativeDispose(long cptr);
 	private static native void nativeSetByMatrix(long cptr, long matptr);
 	private static native void nativeSetByInverseMatrix(long cptr, long matptr);
@@ -27,6 +28,7 @@ public class OrbitManipulator extends CameraManipulator {
 	public OrbitManipulator()
 	{
 		super();
+		_cptr = nativeCreateManipulator();
 	}
 	
 	public OrbitManipulator(long cptr) {
