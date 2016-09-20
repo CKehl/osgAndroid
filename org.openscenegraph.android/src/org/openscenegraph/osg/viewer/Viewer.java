@@ -124,8 +124,6 @@ public class Viewer extends GLSurfaceView implements Native,
 
     Context _context = null;
     
-    OrbitViewerAdapter _viewAdapter = null;
-    
 	public Viewer(Context context) {
 		super(context);
 		_context = context;
@@ -133,13 +131,12 @@ public class Viewer extends GLSurfaceView implements Native,
 		// init(false, 16, 8);
 		/* create the osg viewer */
 		_cptr = nativeCreateViewer();
-		_viewAdapter = new OrbitAroundViewerAdapter(this);
 	}
 	
-	//public Viewer(Viewer viewer) {
-	//	super(viewer.getContext());
-	//	_cptr = viewer.getNativePtr();
-	//}
+	public Viewer(Viewer viewer) {
+		super(viewer.getContext());
+		_cptr = viewer.getNativePtr();
+	}
 
 	// public Viewer(Context context, boolean translucent, int depth, int
 	// stencil) {
@@ -332,6 +329,7 @@ public class Viewer extends GLSurfaceView implements Native,
 		return new Camera(nativeGetCamera(_cptr));
 	}
 	
+	
 	public CameraManipulator getManipulator() {
 		return new CameraManipulator(nativeGetCameraManipulator(_cptr));
 	}
@@ -340,6 +338,7 @@ public class Viewer extends GLSurfaceView implements Native,
 	{
 		nativeSetCameraManipulator(_cptr, object.getNativePtr(), resetView);
 	}
+	
 	
 	public static final int GLES1_CONTEXT = 0x00010001;
 	public static final int GLES2_CONTEXT = 0x00020000;
@@ -586,7 +585,7 @@ public class Viewer extends GLSurfaceView implements Native,
 		private int[] mValue = new int[1];
 	}
 
-	/*
+	
 	public boolean onTouch(View v, MotionEvent event) {
         int numPoints = event.getPointerCount();
         GUIEventAdapter ea = null;
@@ -625,20 +624,6 @@ public class Viewer extends GLSurfaceView implements Native,
         }
         return true;
 
-	}*/
-	
-	public void setOrbitViewerAdapter(OrbitViewerAdapter viewAdapter) {
-		_viewAdapter = viewAdapter;
-	}
-	
-	public OrbitViewerAdapter getOrbitViewerAdapter() {
-		return _viewAdapter;
-	}
-	
-	public boolean onTouch(View v, MotionEvent event) {
-		if(_viewAdapter==null)
-			return false;
-		return _viewAdapter.onTouch(v, event);
 	}
 
 	public boolean onKey(View v, int keyCode, KeyEvent event) {

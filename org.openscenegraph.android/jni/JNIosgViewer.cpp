@@ -108,9 +108,12 @@ USE_SERIALIZER_WRAPPER_LIBRARY(osgText)
 USE_SERIALIZER_WRAPPER_LIBRARY(osgVolume)
 //USE_SERIALIZER_WRAPPER_LIBRARY(osgPresentation)
 
-#define  LOG_TAG    "org.openscenegraph.osg.viewer"
+#define  LOG_TAG    "org.openscenegraph.osgViewer.Viewer"
+#define  LOG_TAG_OSR "org.openscenegraph.osgViewer.OffScreenViewer"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGI_OSR(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG_OSR,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define  LOGE_OSR(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG_OSR,__VA_ARGS__)
 
 class OsgMsgNotifyHandler : public osg::NotifyHandler
 {
@@ -204,13 +207,17 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetViewMa
     osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(matrix_ptr);
     if(viewer != 0 && m!=0)
     {
+    	osg::Vec3d eye, center, up;
     	osg::Matrixd _mat = osg::Matrixd(*m);
+
+    	_mat->getLookAt(eye, center, up);
+    	LOGI("setViewMatrix(): [BEFORE] Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
+
     	osg::Matrixd _pretransform = osg::Matrixd::scale(1,1,1);
     	osg::Matrixd _inverse = osg::Matrixd::inverse(_mat);
     	osg::Matrixd _transformation = _inverse*_pretransform;
-    	osg::Vec3d eye, center, up;
     	_transformation.getLookAt(eye, center, up);
-
+    	LOGI("setViewMatrix(): [AFTER] Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
 
         osgGA::MultiTouchTrackballManipulator* _view_interaction = reinterpret_cast<osgGA::MultiTouchTrackballManipulator*>(viewer->getCameraManipulator());
         _view_interaction->setHomePosition(eye,center,up);
@@ -229,17 +236,17 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetViewMa
     	osg::Matrixd _mat = osg::Matrixd(*m);
     	osg::Vec3d eye, center, up;
     	viewer->getCamera()->getViewMatrixAsLookAt(eye,center,up);
-    	//LOGI("[BEFORE] Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
+    	LOGI("setViewMatrixDistance(): [BEFORE] Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
 
     	//double* data = (double*)(_mat.ptr());
-	//LOGI("[%f,%f,%f,%f]",data[0],data[1],data[2],data[3]);
-	//LOGI("[%f,%f,%f,%f]",data[4],data[5],data[6],data[7]);
-	//LOGI("[%f,%f,%f,%f]",data[8],data[9],data[10],data[11]);
-	//LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
+    	//LOGI("[%f,%f,%f,%f]",data[0],data[1],data[2],data[3]);
+    	//LOGI("[%f,%f,%f,%f]",data[4],data[5],data[6],data[7]);
+    	//LOGI("[%f,%f,%f,%f]",data[8],data[9],data[10],data[11]);
+    	//LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
 
     	viewer->getCamera()->setViewMatrix(_mat);
     	viewer->getCamera()->getViewMatrixAsLookAt(eye,center,up);
-    	LOGI("Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
+    	LOGI("setViewMatrixDistance(): [AFTER] Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
 
         osgGA::MultiTouchTrackballManipulator* _view_interaction = reinterpret_cast<osgGA::MultiTouchTrackballManipulator*>(viewer->getCameraManipulator());
         _view_interaction->setDistance(distance);
@@ -492,7 +499,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
     viewer->getCamera()->setClearColor(osg::Vec4f(0.25f, 0.25f, 0.25f, 1.0f));
     viewer->getCamera()->setClearMask(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-    LOGI("non-windowed context created.");
+    LOGI_OSR("non-windowed context created.");
 
     viewer->setCameraManipulator(0x0);
     viewer->addEventHandler( new osgGA::StateSetManipulator(viewer->getCamera()->getOrCreateStateSet()) );
@@ -536,7 +543,7 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_native
     WindowCaptureCallback* _callback = new WindowCaptureCallback(WindowCaptureCallback::DOUBLE_PBO, WindowCaptureCallback::START_FRAME, GL_BACK);
     if(_callback == NULL)
     {
-        LOGE("Error setting callback function.");
+    	LOGI_OSR("Error setting callback function.");
         return;
     }
     v->getCamera()->setFinalDrawCallback(_callback);
@@ -549,12 +556,12 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
 
     if(viewer==0)
     {
-        LOGE("Viewer unavailable.");
+        LOGE_OSR("Viewer unavailable.");
         return 0;
     }
     if(m==0)
     {
-        LOGE("Matrix unavailable.");
+        LOGE_OSR("Matrix unavailable.");
         return 0;
     }
     osg::Matrixd _mat = osg::Matrixd(*m);
@@ -582,7 +589,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
     }
     else
     {
-        LOGE("Callback unavailable.");
+        LOGE_OSR("Callback unavailable.");
         result = 0;
     }
     return result;
@@ -594,7 +601,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
 
 	if(viewer==0)
 	{
-		LOGE("Viewer unavailable.");
+		LOGE_OSR("Viewer unavailable.");
 		return 0;
 	}
 	WindowCaptureCallback* _callback = reinterpret_cast<WindowCaptureCallback*>(viewer->getCamera()->getFinalDrawCallback());
@@ -615,7 +622,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
 	}
 	else
 	{
-		LOGE("Callback unavailable.");
+		LOGE_OSR("Callback unavailable.");
 		result = 0;
 	}
 	return result;
@@ -630,10 +637,10 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_native
     	osg::Matrixd _mat = osg::Matrixd(*m);
 
     	//double* data = (double*)(_mat.ptr());
-	//LOGI("[%f,%f,%f,%f]",data[0],data[1],data[2],data[3]);
-	//LOGI("[%f,%f,%f,%f]",data[4],data[5],data[6],data[7]);
-	//LOGI("[%f,%f,%f,%f]",data[8],data[9],data[10],data[11]);
-	//LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
+    	//LOGI("[%f,%f,%f,%f]",data[0],data[1],data[2],data[3]);
+    	//LOGI("[%f,%f,%f,%f]",data[4],data[5],data[6],data[7]);
+    	//LOGI("[%f,%f,%f,%f]",data[8],data[9],data[10],data[11]);
+    	//LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
 
     	viewer->getCamera()->setViewMatrix(_mat);
     	osg::Vec3 eye, center, up;
