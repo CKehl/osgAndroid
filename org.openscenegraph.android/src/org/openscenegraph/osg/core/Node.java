@@ -105,7 +105,7 @@ public class Node implements Native {
 	{
 		nativeSetLineWidth(_cptr, width);
 	}
-	
+
 	public long asNode()
 	{
 		return _cptr;

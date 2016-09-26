@@ -5,14 +5,12 @@ import org.openscenegraph.osg.viewer.Viewer;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class OrbitAroundViewerAdapter extends OrbitViewerAdapter {
-
-	public OrbitAroundViewerAdapter(Viewer renderView) {
+public class MatrixViewerAdapter extends ViewerEventAdapter {
+	public MatrixViewerAdapter(Viewer renderView)
+	{
 		super(renderView);
-		// TODO Auto-generated constructor stub
 	}
 
-	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		// TODO Auto-generated method stub
         int numPoints = event.getPointerCount();
@@ -49,8 +47,12 @@ public class OrbitAroundViewerAdapter extends OrbitViewerAdapter {
         			addTouchPoint( ea.getNativePtr(),  event.getPointerId(i), 2, x, y );
         		break;
         	}
+        	
+        	/*
+        	 * 1. COMPOSE THE MATRIX
+        	 * 2. call _renderView.getCameraManipulator().setByViewMatrix()
+        	 */
         }
         return true;
 	}
-	
 }

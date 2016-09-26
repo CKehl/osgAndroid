@@ -39,6 +39,54 @@
 #include <osg/Geode>
 #include <osg/Array>
 #include <osg/LineWidth>
+#include <osg/LightSource>
+
+#include <osg/io_utils>
+#include <osgDB/ReadFile>
+#include <osgDB/WriteFile>
+USE_OSGPLUGIN(ive)
+USE_OSGPLUGIN(osg2)
+USE_OSGPLUGIN(osg)
+USE_OSGPLUGIN(obj)
+USE_OSGPLUGIN(ply)
+USE_OSGPLUGIN(rgb)
+USE_OSGPLUGIN(bmp)
+USE_OSGPLUGIN(tga)
+USE_OSGPLUGIN(gif)
+USE_OSGPLUGIN(jpeg)
+USE_OSGPLUGIN(OpenFlight)
+
+#ifdef USE_FREETYPE
+    USE_OSGPLUGIN(freetype)
+#endif
+
+USE_DOTOSGWRAPPER_LIBRARY(osg)
+//USE_DOTOSGWRAPPER_LIBRARY(osgAnimation)
+USE_DOTOSGWRAPPER_LIBRARY(osgFX)
+USE_DOTOSGWRAPPER_LIBRARY(osgParticle)
+USE_DOTOSGWRAPPER_LIBRARY(osgShadow)
+USE_DOTOSGWRAPPER_LIBRARY(osgSim)
+USE_DOTOSGWRAPPER_LIBRARY(osgTerrain)
+USE_DOTOSGWRAPPER_LIBRARY(osgText)
+USE_DOTOSGWRAPPER_LIBRARY(osgViewer)
+USE_DOTOSGWRAPPER_LIBRARY(osgVolume)
+USE_DOTOSGWRAPPER_LIBRARY(osgWidget)
+
+USE_SERIALIZER_WRAPPER_LIBRARY(osg)
+//USE_SERIALIZER_WRAPPER_LIBRARY(osgUtil)
+//USE_SERIALIZER_WRAPPER_LIBRARY(osgGA)
+//USE_SERIALIZER_WRAPPER_LIBRARY(osgViewer)
+//USE_SERIALIZER_WRAPPER_LIBRARY(osgUI)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgAnimation)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgFX)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgManipulator)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgParticle)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgShadow)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgTerrain)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgText)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgVolume)
+//USE_SERIALIZER_WRAPPER_LIBRARY(osgPresentation)
 
 #define  LOG_TAG    "org.openscenegraph.osg.db.JNIOSGCore"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
@@ -132,6 +180,7 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeSetLineWidth(
 }
 
 
+
 /**
  * osg::Group
  */
@@ -187,6 +236,31 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Group_nativeGetChild(JN
         return reinterpret_cast<jlong>(node);
     }
     return 0l;
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Group_nativeSetActiveLight(JNIEnv *env, jclass, jlong cptr, jlong pos_ptr)
+{
+	osg::Group* n = reinterpret_cast<osg::Group*>(cptr);
+	RefVec4* v = reinterpret_cast<RefVec4*>(pos_ptr);
+	if((n==NULL) || (v==NULL))
+		return;
+
+	osg::StateSet* root_stateset = n->getOrCreateStateSet();
+
+	// create a local light.
+	osg::Light* myLight2 = new osg::Light;
+	myLight2->setLightNum(0);
+	myLight2->setPosition(*v);
+	myLight2->setAmbient(osg::Vec4(1.0f,1.0f,1.0f,1.0f));
+	myLight2->setDiffuse(osg::Vec4(1.0f,1.0f,1.0f,1.0f));
+	myLight2->setConstantAttenuation(1.0f);
+	myLight2->setLinearAttenuation(2.0f/600.0f);
+	myLight2->setQuadraticAttenuation(2.0f/osg::square(600.0f));
+	osg::LightSource* lightS2 = new osg::LightSource;
+	lightS2->setLight(myLight2);
+	lightS2->setLocalStateSetModes(osg::StateAttribute::ON);
+	lightS2->setStateSetModes(*root_stateset,osg::StateAttribute::ON);
+	n->addChild(lightS2);
 }
 
 /*

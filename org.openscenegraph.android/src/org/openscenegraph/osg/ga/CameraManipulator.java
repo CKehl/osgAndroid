@@ -1,5 +1,6 @@
 package org.openscenegraph.osg.ga;
 
+import org.openscenegraph.osg.core.Matrix;
 import org.openscenegraph.osg.core.Object;
 import org.openscenegraph.osg.core.Vec3;
 
@@ -34,5 +35,45 @@ public class CameraManipulator extends Object {
 	
 	public void setHomePosition(Vec3 eye, Vec3 center, Vec3 up, boolean autoComputeHomePosition) {
 		nativeSetHomePosition(_cptr, eye.getNativePtr(), center.getNativePtr(), up.getNativePtr(), autoComputeHomePosition);
+	}
+	
+	public Vec3 getSideVector() {
+		return null;
+	}
+	
+	public Vec3 getFrontVector() {
+		return null;
+	}
+	
+	public Vec3 getUpVector() {
+		return null;
+	}
+	
+	public void setByMatrix() {
+		
+	}
+	
+	public void setByInverseMatrix() {
+		
+	}
+	
+	public Matrix getMatrix() {
+		return null;
+	}
+	
+	public Matrix getInverseMatrix() {
+		return null;
+	}
+	
+	public boolean getAutoComputeHomePosition() {
+		return false;
+	}
+	
+	public void setAutoComputeHomePosition() {
+		
+	}
+	
+	public void home() {
+		
 	}
 }

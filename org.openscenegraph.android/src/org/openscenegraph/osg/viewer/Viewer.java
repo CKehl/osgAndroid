@@ -33,7 +33,6 @@ import org.openscenegraph.osg.core.Vec3;
 import org.openscenegraph.osg.core.Vec3Array;
 import org.openscenegraph.osg.ga.CameraManipulator;
 import org.openscenegraph.osg.ga.GUIEventAdapter;
-import org.openscenegraph.osg.ga.OrbitAroundViewerAdapter;
 import org.openscenegraph.osg.ga.OrbitViewerAdapter;
 
 import android.content.Context;

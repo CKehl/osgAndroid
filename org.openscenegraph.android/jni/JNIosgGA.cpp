@@ -31,6 +31,7 @@
 #include <osgGA/OrbitManipulator>
 #include <osgGA/FirstPersonManipulator>
 #include <osgGA/CameraManipulator>
+#include <osgGA/FirstPersonManipulator>
 #include <osgViewer/Viewer>
 
 #include "GLES2ShaderGenVisitor.h"
@@ -258,7 +259,15 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeSe
     if(cm != NULL && eye !=NULL && center != NULL && up != NULL)
     {
         cm->setHomePosition(*eye,*center,*up, _autoComputeHomePosition);
+        cm->home(0);
     }
+}
+
+JNIEXPORT long JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
+{
+	osgGA::FirstPersonManipulator* fpm = new osgGA::FirstPersonManipulator();
+	fpm->ref();
+	return reinterpret_cast<jlong>(fpm);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

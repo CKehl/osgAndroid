@@ -27,6 +27,7 @@ public class Group extends Node {
 	private static native boolean nativeRemoveChild(long cptr, long node);
 	private static native int nativeGetNumChildren(long cptr);
 	private static native long nativeGetChild(long cptr, int i);
+	private static native void nativeSetActiveLight(long cptr, long pos_ptr);
 	
 	public Group(long cptr) {
 		super(cptr);	
@@ -63,4 +64,9 @@ public class Group extends Node {
 	{
 		return new Node(nativeGetChild(_cptr, getNumChildren()-1));
 	}
+
+	public void setActiveLight(Vec4 position) {
+		nativeSetActiveLight(_cptr, position.getNativePtr());
+	}
+	
 }

@@ -23,6 +23,7 @@
 
 #include "JNIUtils.h"
 #include <stdlib.h>
+#include <float.h>
 #include <sstream>
 
 #include <osg/ref_ptr>
@@ -69,6 +70,8 @@
 USE_OSGPLUGIN(ive)
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(osg)
+USE_OSGPLUGIN(obj)
+USE_OSGPLUGIN(ply)
 USE_OSGPLUGIN(rgb)
 USE_OSGPLUGIN(bmp)
 USE_OSGPLUGIN(tga)
@@ -731,7 +734,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
 		}
 		else
 		{
-			refRes->set(DBL_MAX,DBL_MAX,DBL_MAX);
+			refRes->set(999999.9f, 999999.9f, 999999.9f);
 		}
 		refRes->ref();
 		v3a->push_back(*refRes);
