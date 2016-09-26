@@ -213,7 +213,7 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetViewMa
     	osg::Vec3d eye, center, up;
     	osg::Matrixd _mat = osg::Matrixd(*m);
 
-    	_mat->getLookAt(eye, center, up);
+    	_mat.getLookAt(eye, center, up);
     	LOGI("setViewMatrix(): [BEFORE] Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
 
     	osg::Matrixd _pretransform = osg::Matrixd::scale(1,1,1);

@@ -69,7 +69,7 @@ public class CameraManipulator extends Object {
 		return false;
 	}
 	
-	public void setAutoComputeHomePosition() {
+	public void setAutoComputeHomePosition(boolean flag) {
 		
 	}
 	

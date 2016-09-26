@@ -44,6 +44,9 @@
 extern "C"
 {
 
+///////////////////////////////////////////////////////////////////////////////
+// GUIEventAdapter
+///////////////////////////////////////////////////////////////////////////////
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_GUIEventAdapter_nativeDispose(JNIEnv *env, jclass, jlong cptr)
 {
 	osgGA::GUIEventAdapter* ea = reinterpret_cast<osgGA::GUIEventAdapter*>(cptr);
@@ -52,6 +55,10 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_GUIEventAdapter_nativeDisp
 	ea->unref();
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Orbit Manipulator
+///////////////////////////////////////////////////////////////////////////////
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_OrbitManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
 {
 	osgGA::OrbitManipulator* om = new osgGA::OrbitManipulator();
@@ -208,6 +215,9 @@ JNIEXPORT jdouble JNICALL Java_org_openscenegraph_osg_ga_OrbitManipulator_native
 	return om->getDistance();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// First-Person Manipulator
+///////////////////////////////////////////////////////////////////////////////
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
 {
 	osgGA::FirstPersonManipulator* fpm = new osgGA::FirstPersonManipulator();
@@ -215,7 +225,9 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_na
 	return reinterpret_cast<jlong>(fpm);
 }
 
-
+///////////////////////////////////////////////////////////////////////////////
+// Camera Manipulator
+///////////////////////////////////////////////////////////////////////////////
 /*
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
 {
@@ -263,11 +275,110 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeSe
     }
 }
 
-JNIEXPORT long JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetSideVector(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return 0l;
+	osg::Vec3d eyeD, centerD, upD;
+    cm->getHomePosition(eyeD, centerD, upD);
+    osg::CoordinateFrame cf = cm->getCoordinateFrame(eyeD);
+	osg::Vec3 v = cm->getSideVector(cf);
+	RefVec3 *r = new RefVec3();
+	r->set(v);
+	r->ref();
+	return reinterpret_cast<jlong>(r);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetFrontVector(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return 0l;
+	osg::Vec3d eyeD, centerD, upD;
+    cm->getHomePosition(eyeD, centerD, upD);
+    osg::CoordinateFrame cf = cm->getCoordinateFrame(eyeD);
+	osg::Vec3 v = cm->getFrontVector(cf);
+	RefVec3 *r = new RefVec3();
+	r->set(v);
+	r->ref();
+	return reinterpret_cast<jlong>(r);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetUpVector(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return 0l;
+	osg::Vec3d eyeD, centerD, upD;
+    cm->getHomePosition(eyeD, centerD, upD);
+    osg::CoordinateFrame cf = cm->getCoordinateFrame(eyeD);
+	osg::Vec3 v = cm->getUpVector(cf);
+	RefVec3 *r = new RefVec3();
+	r->set(v);
+	r->ref();
+	return reinterpret_cast<jlong>(r);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeSetByMatrix(JNIEnv *env, jclass, jlong cptr, jlong mptr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(mptr);
+	if((cm==NULL) || (m==NULL))
+		return;
+	osg::Matrixd mat = osg::Matrixd(*m);
+	cm->setByMatrix(mat);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeSetByInverseMatrix(JNIEnv *env, jclass, jlong cptr, jlong mptr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(mptr);
+	if((cm==NULL) || (m==NULL))
+		return;
+	osg::Matrixd mat = osg::Matrixd(*m);
+	cm->setByInverseMatrix(mat);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetMatrix(JNIEnv *env, jclass, jlong cptr)
 {
-	osgGA::FirstPersonManipulator* fpm = new osgGA::FirstPersonManipulator();
-	fpm->ref();
-	return reinterpret_cast<jlong>(fpm);
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return 0l;
+
+	osg::Matrixd mat = cm->getMatrix();
+	osg::RefMatrixf* result = new osg::RefMatrixf(mat);
+	result->ref();
+	return reinterpret_cast<jlong>(result);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetInverseMatrix(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return 0l;
+
+	osg::RefMatrixf *result = NULL;
+	osg::Matrixd mat = cm->getInverseMatrix();
+	result = new osg::RefMatrixf(mat);
+	result->ref();
+	return reinterpret_cast<jlong>(result);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetAutoComputeHomePosition(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return 0l;
+	bool flag = cm->getAutoComputeHomePosition();
+	return ((flag==true)?JNI_TRUE:JNI_FALSE);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeSetAutoComputeHomePosition(JNIEnv *env, jclass, jlong cptr, jboolean autoComputeHomePosition) {
+	bool _autoComputeHomePosition = ((autoComputeHomePosition==JNI_TRUE)?true:false);
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm!=NULL)
+		cm->setAutoComputeHomePosition(_autoComputeHomePosition);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeHome(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm!=NULL)
+		cm->home(0.0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
