@@ -22,7 +22,7 @@ public class OrbitManipulator extends CameraManipulator {
 	private static native void nativeSetDistance(long cptr, double distance);
 	private static native double nativeGetDistance(long cptr);
 	
-	protected long _cptr;
+	//protected long _cptr;
 
 	
 	public OrbitManipulator()

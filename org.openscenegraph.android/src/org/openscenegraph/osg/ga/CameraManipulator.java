@@ -9,6 +9,16 @@ public class CameraManipulator extends Object {
 	private static native void nativeDispose(long cptr);
 	private static native void nativeGetHomePosition(long cptr, long eye_ptr, long center_ptr, long up_ptr);
 	private static native void nativeSetHomePosition(long cptr, long eye_ptr, long center_ptr, long up_ptr, boolean autoComputeHomePosition);
+	private static native long nativeGetSideVector(long cptr);
+	private static native long nativeGetFrontVector(long cptr);
+	private static native long nativeGetUpVector(long cptr);
+	private static native void nativeSetByMatrix(long cptr, long mptr);
+	private static native void nativeSetByInverseMatrix(long cptr, long mptr);
+	private static native long nativeGetMatrix(long cptr);
+	private static native long nativeGetInverseMatrix(long cptr);
+	private static native boolean nativeGetAutoComputeHomePosition(long cptr);
+	private static native void nativeSetAutoComputeHomePosition(long cptr, boolean autoComputeHomePosition);
+	private static native void nativeHome(long cptr);
 	
 	public CameraManipulator()
 	{
@@ -38,42 +48,42 @@ public class CameraManipulator extends Object {
 	}
 	
 	public Vec3 getSideVector() {
-		return null;
+		return new Vec3(nativeGetSideVector(_cptr));
 	}
 	
 	public Vec3 getFrontVector() {
-		return null;
+		return new Vec3(nativeGetFrontVector(_cptr));
 	}
 	
 	public Vec3 getUpVector() {
-		return null;
+		return new Vec3(nativeGetUpVector(_cptr));
 	}
 	
-	public void setByMatrix() {
-		
+	public void setByMatrix(Matrix matrix) {
+		nativeSetByMatrix(_cptr, matrix.getNativePtr());
 	}
 	
-	public void setByInverseMatrix() {
-		
+	public void setByInverseMatrix(Matrix matrix) {
+		nativeSetByInverseMatrix(_cptr, matrix.getNativePtr());
 	}
 	
 	public Matrix getMatrix() {
-		return null;
+		return new Matrix(nativeGetMatrix(_cptr));
 	}
 	
 	public Matrix getInverseMatrix() {
-		return null;
+		return new Matrix(nativeGetInverseMatrix(_cptr));
 	}
 	
 	public boolean getAutoComputeHomePosition() {
-		return false;
+		return nativeGetAutoComputeHomePosition(_cptr);
 	}
 	
 	public void setAutoComputeHomePosition(boolean flag) {
-		
+		nativeSetAutoComputeHomePosition(_cptr, flag);
 	}
 	
 	public void home() {
-		
+		nativeHome(_cptr);
 	}
 }

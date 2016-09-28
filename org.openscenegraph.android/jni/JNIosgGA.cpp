@@ -29,9 +29,11 @@
 #include <osg/Matrixf>
 #include <osgGA/GUIEventAdapter>
 #include <osgGA/OrbitManipulator>
+#include <osgGA/TerrainManipulator>
 #include <osgGA/FirstPersonManipulator>
 #include <osgGA/CameraManipulator>
 #include <osgGA/FirstPersonManipulator>
+#include <osgGA/MultiTouchTrackballManipulator>
 #include <osgViewer/Viewer>
 
 #include "GLES2ShaderGenVisitor.h"
@@ -215,6 +217,8 @@ JNIEXPORT jdouble JNICALL Java_org_openscenegraph_osg_ga_OrbitManipulator_native
 	return om->getDistance();
 }
 
+//set/get transformation
+
 ///////////////////////////////////////////////////////////////////////////////
 // First-Person Manipulator
 ///////////////////////////////////////////////////////////////////////////////
@@ -226,8 +230,57 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_na
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Terrain Manipulator
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeDispose(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm == NULL)
+		return;
+	tm->unref();
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
+{
+	osgGA::TerrainManipulator* tm = new osgGA::TerrainManipulator();
+	tm->ref();
+	return reinterpret_cast<jlong>(tm);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeSetByMatrix(JNIEnv *env, jclass, jlong cptr, jlong mptr) {
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(mptr);
+	if((tm==NULL) || (m==NULL))
+		return;
+	osg::Matrixd mat = osg::Matrixd(*m);
+	tm->setByMatrix(mat);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeSetNode(JNIEnv *env, jclass, jlong cptr, jlong nptr)
+{
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	osg::Node* node = reinterpret_cast<osg::Node*>(nptr);
+	if((tm==NULL) || (node==NULL))
+		return;
+	tm->setNode(node);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeSetTransformation(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong center_ptr, jlong up_ptr)
+{
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+    RefVec3 *center = reinterpret_cast<RefVec3 *>(center_ptr);
+    RefVec3 *up = reinterpret_cast<RefVec3 *>(up_ptr);
+    if(tm != NULL && eye !=NULL && center != NULL && up != NULL)
+    {
+    	tm->setTransformation(*eye, *center, *up);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Camera Manipulator
 ///////////////////////////////////////////////////////////////////////////////
+
 /*
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
 {

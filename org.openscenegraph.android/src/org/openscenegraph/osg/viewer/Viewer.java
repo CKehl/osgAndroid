@@ -33,7 +33,6 @@ import org.openscenegraph.osg.core.Vec3;
 import org.openscenegraph.osg.core.Vec3Array;
 import org.openscenegraph.osg.ga.CameraManipulator;
 import org.openscenegraph.osg.ga.GUIEventAdapter;
-import org.openscenegraph.osg.ga.OrbitViewerAdapter;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
@@ -56,8 +55,6 @@ public class Viewer extends GLSurfaceView implements Native,
 	public long getNativePtr() {
 		return _cptr;
 	}
-	
-
 
 	/**
 	 * @return native pointer to the viewer
@@ -584,7 +581,6 @@ public class Viewer extends GLSurfaceView implements Native,
 		private int[] mValue = new int[1];
 	}
 
-	
 	public boolean onTouch(View v, MotionEvent event) {
         int numPoints = event.getPointerCount();
         GUIEventAdapter ea = null;
