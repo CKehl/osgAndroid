@@ -66,6 +66,17 @@ public class Matrix implements Native {
 	
 	private static native void nativeMult(long cptr, long m1_ptr, long m2_ptr);
 	
+<<<<<<< HEAD
+=======
+	private static native long nativeMultiply(long m1_ptr, long m2_ptr);
+	
+	private static native long nativeMultiplyScalar(long cptr, float scalar);
+	
+	private static native void nativeInPlaceMultiplyScalar(long cptr, float scalar);
+	
+	private static native long nativeSquare(long cptr);
+	
+>>>>>>> parent of 17c3243...  Changes to be committed:
 	private static native void nativeMakeLookAt(long cptr, long eye, long center, long up);
 
 	private long _cptr;
@@ -109,6 +120,14 @@ public class Matrix implements Native {
 		return new Matrix(nativeScale(scale_values.getNativePtr()));
 	}
 	
+<<<<<<< HEAD
+=======
+	public static Matrix multiply(Matrix lhs, Matrix rhs)
+	{
+		return new Matrix(nativeMultiply(lhs.getNativePtr(), rhs.getNativePtr()));
+	}
+	
+>>>>>>> parent of 17c3243...  Changes to be committed:
 	public Matrix clone()
 	{
 		Matrix result = new Matrix();
