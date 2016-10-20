@@ -45,49 +45,6 @@
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
 
-USE_OSGPLUGIN(ive)
-USE_OSGPLUGIN(osg2)
-USE_OSGPLUGIN(osg)
-USE_OSGPLUGIN(obj)
-USE_OSGPLUGIN(rgb)
-USE_OSGPLUGIN(bmp)
-USE_OSGPLUGIN(tga)
-USE_OSGPLUGIN(gif)
-USE_OSGPLUGIN(jpeg)
-USE_OSGPLUGIN(OpenFlight)
-
-#ifdef USE_FREETYPE
-    USE_OSGPLUGIN(freetype)
-#endif
-
-USE_DOTOSGWRAPPER_LIBRARY(osg)
-//USE_DOTOSGWRAPPER_LIBRARY(osgAnimation)
-USE_DOTOSGWRAPPER_LIBRARY(osgFX)
-USE_DOTOSGWRAPPER_LIBRARY(osgParticle)
-USE_DOTOSGWRAPPER_LIBRARY(osgShadow)
-USE_DOTOSGWRAPPER_LIBRARY(osgSim)
-USE_DOTOSGWRAPPER_LIBRARY(osgTerrain)
-USE_DOTOSGWRAPPER_LIBRARY(osgText)
-USE_DOTOSGWRAPPER_LIBRARY(osgViewer)
-USE_DOTOSGWRAPPER_LIBRARY(osgVolume)
-USE_DOTOSGWRAPPER_LIBRARY(osgWidget)
-
-USE_SERIALIZER_WRAPPER_LIBRARY(osg)
-//USE_SERIALIZER_WRAPPER_LIBRARY(osgUtil)
-//USE_SERIALIZER_WRAPPER_LIBRARY(osgGA)
-//USE_SERIALIZER_WRAPPER_LIBRARY(osgViewer)
-//USE_SERIALIZER_WRAPPER_LIBRARY(osgUI)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgAnimation)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgFX)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgManipulator)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgParticle)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgShadow)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgTerrain)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgText)
-USE_SERIALIZER_WRAPPER_LIBRARY(osgVolume)
-//USE_SERIALIZER_WRAPPER_LIBRARY(osgPresentation)
-
 #define  LOG_TAG    "org.openscenegraph.osg.db.JNIOSGCore"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -106,6 +63,13 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeDispose(JNIEn
 	//if(node!=0)
 	if((node != 0) && (node->referenceCount()<2))
 		node->unref();
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Node_nativeCreateNode(JNIEnv *, jclass, jlong cptr)
+{
+    osg::Node *n = new osg::Node();
+    n->ref();
+    return reinterpret_cast<jlong>(n);
 }
 
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeSetUpdateCallback(JNIEnv *, jclass, jlong cptr,
@@ -179,6 +143,13 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeSetLineWidth(
 		node->getOrCreateStateSet()->setAttributeAndModes(lw, osg::StateAttribute::ON);
 }
 
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeDirtyBound(JNIEnv* env, jclass, jlong cptr)
+{
+	osg::Node* n = reinterpret_cast<osg::Node*>(cptr);
+	if(n==NULL)
+		return;
+	n->dirtyBound();
+}
 
 
 /**
@@ -261,6 +232,22 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Group_nativeSetActiveLig
 	lightS2->setLocalStateSetModes(osg::StateAttribute::ON);
 	lightS2->setStateSetModes(*root_stateset,osg::StateAttribute::ON);
 	n->addChild(lightS2);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Group_nativeComputeBound(JNIEnv* env, jclass, jlong cptr)
+{
+	osg::Group* g = reinterpret_cast<osg::Group*>(cptr);
+	if(g==NULL)
+		return;
+	g->computeBound();
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Group_nativeDirtyBound(JNIEnv* env, jclass, jlong cptr)
+{
+	osg::Group* g = reinterpret_cast<osg::Group*>(cptr);
+	if(g==NULL)
+		return;
+	g->dirtyBound();
 }
 
 /*

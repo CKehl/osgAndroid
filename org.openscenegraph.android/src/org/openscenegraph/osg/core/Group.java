@@ -28,19 +28,28 @@ public class Group extends Node {
 	private static native int nativeGetNumChildren(long cptr);
 	private static native long nativeGetChild(long cptr, int i);
 	private static native void nativeSetActiveLight(long cptr, long pos_ptr);
+	private static native void nativeDirtyBound(long cptr);
+	private static native void nativeComputeBound(long cptr);
+	
+	public Group() {
+		super(nativeCreateGroup());
+		//_cptr = nativeCreateGroup();
+	}
 	
 	public Group(long cptr) {
 		super(cptr);	
+	}
+	
+	public void dispose() {
+		if(_cptr != 0)
+			nativeDispose(_cptr);
+		_cptr = 0;
 	}
 	
 	@Override
 	protected void finalize() throws Throwable {
 		dispose();
 		super.finalize();
-	}
-	
-	public Group() {
-		_cptr = nativeCreateGroup();
 	}
 
 	public boolean addChild(Node node) {
@@ -69,4 +78,11 @@ public class Group extends Node {
 		nativeSetActiveLight(_cptr, position.getNativePtr());
 	}
 	
+	public void dirtyBound() {
+		nativeDirtyBound(_cptr);
+	}
+	
+	public void computeBound() {
+		nativeComputeBound(_cptr);
+	}
 }

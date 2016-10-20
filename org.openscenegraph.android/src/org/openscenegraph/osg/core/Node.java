@@ -22,6 +22,7 @@ import org.openscenegraph.osg.Native;
 
 public class Node implements Native {
 	private static native void nativeDispose(long cptr);
+	private static native long nativeCreateNode();
 	private static native void nativeSetUpdateCallback(long cptr, long ucb);
 	private static native void nativeSetRenderBinDetails(long cptr, int order, String bin);
 	private static native void nativeSetTexture2D(long cptr, long cptrimage);
@@ -29,6 +30,7 @@ public class Node implements Native {
 	private static native void nativeSetMode(long cptr, int mode, int value);
 	private static native void nativeSetPointSize(long cptr, float pt_size);
 	private static native void nativeSetLineWidth(long cptr, float line_size);
+	private static native void nativeDirtyBound(long cptr);
 	
     public static class Values
     {   
@@ -66,7 +68,7 @@ public class Node implements Native {
 	}
 	
 	public Node() {
-		_cptr = 0;
+		_cptr = nativeCreateNode();
 	}
 
 	public void setUpdateCallback(UpdateCallback am) {
@@ -109,5 +111,9 @@ public class Node implements Native {
 	public long asNode()
 	{
 		return _cptr;
+	}
+	
+	public void dirtyBound() {
+		nativeDirtyBound(_cptr);
 	}
 }

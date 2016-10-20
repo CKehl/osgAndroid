@@ -328,6 +328,16 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeSe
     }
 }
 
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeComputeHomePosition(JNIEnv* env, jclass, jlong cptr, jlong camPtr, jboolean useBoundingBox)
+{
+	bool _useBoundingBox = ((useBoundingBox==JNI_TRUE)?true:false);
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	osg::Camera* c = reinterpret_cast<osg::Camera*>(camPtr);
+	if((cm==NULL) || (c==NULL))
+		return;
+	cm->computeHomePosition(c, _useBoundingBox);
+}
+
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetSideVector(JNIEnv *env, jclass, jlong cptr) {
 	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
 	if(cm==NULL)
