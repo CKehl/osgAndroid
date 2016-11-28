@@ -26,7 +26,7 @@ public class ViewerBase extends Object {
 	private native void nativeSetUpViewerAsEmbedded(long cptr, int x, int y, int width, int height);
 	private native void nativeSetViewport(long cptr, int x, int y, int width, int height);
 	private native void nativeFrame(long cptr);
-	
+
 	//protected long _cptr;
 	//public long getNativePtr() {
 	//	return _cptr;

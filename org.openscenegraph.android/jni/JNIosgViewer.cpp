@@ -257,13 +257,37 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetViewMa
     }
 }
 
-JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetPerspectiveMatrix(JNIEnv* env, jclass, jlong cptr, jint width, jint height, jfloat fov)
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetPerspectiveMatrix(JNIEnv* env, jclass, jlong cptr, jint width, jint height, jfloat fov, jfloat dNear, jfloat dFar)
 {
     osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*> (cptr);
     if (viewer == NULL)
         return;
 
-    viewer->getCamera()->setProjectionMatrix(osg::Matrixd::perspective(osg::RadiansToDegrees(fov), jfloat(width)/jfloat(height), 0.1, 1500.0));
+    viewer->getCamera()->setProjectionMatrix(osg::Matrixd::perspective(osg::RadiansToDegrees(fov), jfloat(width)/jfloat(height), dNear, dFar));
+}
+
+JNIEXPORT float JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeWidth(JNIEnv* env, jclass, jlong cptr) {
+    osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*> (cptr);
+    //if (viewer == NULL)
+    //    return .0f;
+    //return viewer->getCamera()->getViewport()->width();
+	if(viewer != 0)
+	{
+		return viewer->getCamera()->getViewport()->width();
+	}
+	return 0.0f;
+}
+
+JNIEXPORT float JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeHeight(JNIEnv* env, jclass, jlong cptr) {
+    osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*> (cptr);
+    //if (viewer == NULL)
+    //    return .0f;
+    //return viewer->getCamera()->getViewport()->height();
+	if(viewer != 0)
+	{
+		return viewer->getCamera()->getViewport()->height();
+	}
+	return 0.0f;
 }
 
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetDefaultSettings(JNIEnv *, jclass, jlong cptr)
@@ -500,6 +524,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativ
 
     viewer->getCamera()->setClearColor(osg::Vec4f(0.25f, 0.25f, 0.25f, 1.0f));
     viewer->getCamera()->setClearMask(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    viewer->getCamera()->setViewport(0,0,width,height);
 
     LOGI_OSR("non-windowed context created.");
 
@@ -517,22 +542,54 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_native
     v->setUpViewerAsEmbeddedInWindow(x, y, width, height);
 }
 
-JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeSetViewport(JNIEnv *, jclass, jlong cptr, jint x, jint y, jint width, jint height)
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeSetViewportParameters(JNIEnv *, jclass, jlong cptr, jint x, jint y, jint width, jint height)
 {
     osgViewer::Viewer *v = reinterpret_cast<osgViewer::Viewer*> (cptr);
     if (v == NULL)
         return;
-    //v->getEventQueue()->windowResize(x, y, width, height);
     v->getCamera()->setViewport(x,y,width,height);
 }
 
-JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeSetView(JNIEnv* env, jclass, jlong cptr, jint width, jint height, jfloat fov)
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeSetViewport(JNIEnv *, jclass, jlong cptr, jlong vpPtr)
+{
+    osgViewer::Viewer *v = reinterpret_cast<osgViewer::Viewer*> (cptr);
+    osg::Viewport* vp = reinterpret_cast<osg::Viewport*>(vpPtr);
+    if ((v == NULL) || (vp == NULL))
+        return;
+    v->getCamera()->setViewport(vp);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeSetPerspectiveMatrix(JNIEnv* env, jclass, jlong cptr, jint width, jint height, jfloat fov, jfloat dNear, jfloat dFar)
+{
+    osgViewer::Viewer *v = reinterpret_cast<osgViewer::Viewer*> (cptr);
+    if (v == NULL)
+        return;
+
+    v->getCamera()->setProjectionMatrix(osg::Matrixd::perspective(osg::RadiansToDegrees(fov), jfloat(width)/jfloat(height), dNear, dFar));
+}
+
+JNIEXPORT jfloat JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeWidth(JNIEnv* env, jclass, jlong cptr) {
+    osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*> (cptr);
+    if (viewer == NULL)
+        return .0f;
+    return viewer->getCamera()->getViewport()->width();
+}
+
+JNIEXPORT jfloat JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeHeight(JNIEnv* env, jclass, jlong cptr) {
+    osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*> (cptr);
+    if (viewer == NULL)
+        return .0f;
+    return viewer->getCamera()->getViewport()->height();
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeSetView(JNIEnv* env, jclass, jlong cptr, jint width, jint height, jfloat fov, jfloat dNear, jfloat dFar)
 {
     osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer*> (cptr);
     if (viewer == NULL)
         return;
 
-    viewer->getCamera()->setProjectionMatrix(osg::Matrixd::perspective(osg::RadiansToDegrees(fov), jfloat(width)/jfloat(height), 0.1, 1500.0));
+    viewer->getCamera()->setProjectionMatrix(osg::Matrixd::perspective(osg::RadiansToDegrees(fov), jfloat(width)/jfloat(height), dNear, dFar));
+    viewer->getCamera()->setViewport(0,0,width,height);
     osg::Matrixd lookat_matrix = osg::Matrixd::lookAt(osg::Vec3d(0.0, 0.0, -1.0), osg::Vec3d(0.0, 0.0, 1.0), osg::Vec3d(0.0, 1.0, 0.0));
     viewer->getCamera()->setViewMatrix(lookat_matrix);
 }
@@ -543,6 +600,7 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_native
     if (v == NULL)
         return;
     WindowCaptureCallback* _callback = new WindowCaptureCallback(WindowCaptureCallback::DOUBLE_PBO, WindowCaptureCallback::START_FRAME, GL_BACK);
+    _callback->ref();
     if(_callback == NULL)
     {
     	LOGI_OSR("Error setting callback function.");
@@ -645,20 +703,9 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_native
     	//LOGI("[%f,%f,%f,%f]",data[12],data[13],data[14],data[15]);
 
     	viewer->getCamera()->setViewMatrix(_mat);
-    	osg::Vec3 eye, center, up;
-    	viewer->getCamera()->getViewMatrixAsLookAt(eye,center,up);
-    	LOGI("Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
-    }
-}
-
-JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_OffScreenViewer_nativeSetRenderMatrix(JNIEnv* env, jclass, jlong cptr, jlong matrix_ptr)
-{
-    osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer *>(cptr);
-    osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(matrix_ptr);
-    if(viewer != 0 && m!=0)
-    {
-    	osg::Matrixd _mat = osg::Matrixd(*m);
-    	viewer->getCamera()->setViewMatrix(_mat);
+    	//osg::Vec3 eye, center, up;
+    	//viewer->getCamera()->getViewMatrixAsLookAt(eye,center,up);
+    	//LOGI("Eye: (%f,%f,%f) - Center: (%f,%f,%f) - Up: (%f,%f,%f)",eye.x(), eye.y(), eye.z(), center.x(), center.y(), center.z(), up.x(), up.y(), up.z());
     }
 }
 

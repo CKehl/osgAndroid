@@ -21,7 +21,9 @@ package org.openscenegraph.osg.util;
 import org.openscenegraph.osg.core.Camera;
 import org.openscenegraph.osg.core.Image;
 import org.openscenegraph.osg.core.Matrix;
+import org.openscenegraph.osg.core.Vec2Array;
 import org.openscenegraph.osg.core.Vec3;
+import org.openscenegraph.osg.core.Vec3Array;
 
 import android.util.Log;
 
@@ -29,6 +31,7 @@ public class GeometryUtils {
 	private static native long nativeCreateScreenQuad(int x, int y, int w, int h, boolean isBackGround);
 	private static native int nativeTextureFromPose(String in_filepath, String out_filepath, long Cg_ptr, long trmat_ptr, long R_ptr, long img_ptr);
 	private static native int nativeTextureFromPoseImgfile(String in_filepath, String out_filepath, long Cg_ptr, long trmat_ptr, long R_ptr, String img_filename);
+	private static native long nativeReprojectPoints(long camPtr, long pointArrayPtr);
 	
 	public static Camera createScreenQuad(int x, int y, int w, int h, boolean isBackGround) {
 		long cptr = nativeCreateScreenQuad(x,y,w,h,isBackGround);
@@ -51,6 +54,10 @@ public class GeometryUtils {
 	public static int TextureFromPose(String in_geometryfile, String out_geometryfile, Vec3 Cg, Matrix trmat, Vec3 RvecCam, String img_filepath)
 	{
 		return nativeTextureFromPoseImgfile(in_geometryfile, out_geometryfile, Cg.getNativePtr(), trmat.getNativePtr(), RvecCam.getNativePtr(), img_filepath);
+	}
+	
+	public static Vec2Array reprojectPoints(Camera cam, Vec3Array vertices) {
+		return new Vec2Array(nativeReprojectPoints(cam.getNativePtr(), vertices.getNativePtr()));
 	}
 
 }

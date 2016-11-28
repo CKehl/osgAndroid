@@ -181,6 +181,34 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_util_GeometryUtils_nativeCre
 
 }
 
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_util_GeometryUtils_nativeReprojectPoints(JNIEnv *env, jobject, jlong camPtr, jlong pointArrayPtr)
+{
+	osg::Camera* c = reinterpret_cast<osg::Camera*>(camPtr);
+	if(c==NULL)
+		return 0l;
+	osg::Vec3Array* va = reinterpret_cast<osg::Vec3Array*>(pointArrayPtr);
+	if(va==NULL)
+		return 0l;
+	osg::Vec2Array* vaOut = new osg::Vec2Array();
+	vaOut->ref();
+	osg::Matrixd transmat = c->getViewMatrix() * c->getProjectionMatrix() * c->getViewport()->computeWindowMatrix();
+	for(int i=0; i< va->size(); i++) {
+		//osg::Vec4 v(va->at(i).x(), va->at(i).y(), va->at(i).z(), 1.0);
+		osg::Vec3 v(va->at(i).x(), va->at(i).y(), va->at(i).z());
+		v = v * transmat;
+		//v = v / v.w();
+		RefVec2 *refRes = new RefVec2();
+		if((v.x()>0) && (v.x()<c->getViewport()->width()) && (v.y()>0) && (v.y()<c->getViewport()->height())) {
+			refRes->set(v.x(), v.y());
+		} else {
+			refRes->set(-1.0f, -1.0f);
+		}
+		refRes->ref();
+		vaOut->push_back(*refRes);
+	}
+	return reinterpret_cast<jlong>(vaOut);
+}
+
 JNIEXPORT jint JNICALL Java_org_openscenegraph_osg_util_GeometryUtils_nativeTextureFromPose(JNIEnv *env, jclass, jstring in_filepath, jstring out_filepath, jlong Cg_ptr, jlong trmat_ptr, jlong R_ptr, jlong img_ptr)
 {
 	osg::Group* _node = reinterpret_cast<osg::Group*>(osgDB::readNodeFile(jstring2string(env,in_filepath)));

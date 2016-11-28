@@ -30,6 +30,8 @@ public class Matrix implements Native {
 	
 	private static native long nativeTranspose(long cptr);
 	
+	private static native long nativeNegation(long cptr);
+	
 	private static native long nativeScale(long vec_cptr);
 	
 	private static native void nativeSet(long cptr, float a00, float a01,
@@ -70,7 +72,9 @@ public class Matrix implements Native {
 	
 	private static native long nativeMultiply(long m1_ptr, long m2_ptr);
 	
-	private static native long nativeMultiplyVector(long cptr, long vecptr);
+	private static native long nativeMultiplyVector3(long cptr, long vecptr);
+	
+	private static native long nativeMultiplyVector4(long cptr, long vecptr);
 	
 	private static native long nativeMultiplyScalar(long cptr, float scalar);
 	
@@ -128,11 +132,20 @@ public class Matrix implements Native {
 		return new Matrix(nativeMultiply(lhs.getNativePtr(), rhs.getNativePtr()));
 	}
 	
-	public static Vec3 multiply(Matrix lhs, Vec3 rhs)
-	{
-		return new Vec3(nativeMultiplyVector(lhs.getNativePtr(), rhs.getNativePtr()));
+	public static Matrix negate(Matrix m) {
+		return new Matrix(nativeNegation(m.getNativePtr()));
 	}
 	
+	public static Vec3 multiply(Matrix lhs, Vec3 rhs)
+	{
+		return new Vec3(nativeMultiplyVector3(lhs.getNativePtr(), rhs.getNativePtr()));
+	}
+
+	public static Vec4 multiply(Matrix lhs, Vec4 rhs)
+	{
+		return new Vec4(nativeMultiplyVector4(lhs.getNativePtr(), rhs.getNativePtr()));
+	}
+
 	public Matrix clone()
 	{
 		Matrix result = new Matrix();

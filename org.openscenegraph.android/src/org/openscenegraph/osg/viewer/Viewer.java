@@ -65,8 +65,12 @@ public class Viewer extends GLSurfaceView implements Native,
 
 	private native void nativeSetViewMatrixDistance(long cptr, long matrix_ptr, double distance);
 	
-	private native void nativeSetPerspectiveMatrix(long cptr, int width, int height, float fov);
+	private native void nativeSetPerspectiveMatrix(long cptr, int width, int height, float fov, float dNear, float dFar);
 
+	private native float nativeWidth(long cptr);
+	
+	private native float nativeHeight(long cptr);
+	
 	private native void nativeDisposeViewer(long cptr);
 
 	private native void nativeSetDefaultSettings(long cptr);
@@ -119,6 +123,7 @@ public class Viewer extends GLSurfaceView implements Native,
     protected native long nativeRaycastViewCenter(long viewer_cptr, long camera_ptr);
 
     Context _context = null;
+    private OSGRenderer mRenderer = null;
     
 	public Viewer(Context context) {
 		super(context);
@@ -168,7 +173,7 @@ public class Viewer extends GLSurfaceView implements Native,
 	 */
 	public void setPerspectiveMatrix(int width, int height, float fovy)
 	{
-		nativeSetPerspectiveMatrix(_cptr, width, height, fovy);
+		nativeSetPerspectiveMatrix(_cptr, width, height, fovy, 0.1f, 1500.0f);
 	}
 	
 	/**
@@ -301,6 +306,22 @@ public class Viewer extends GLSurfaceView implements Native,
 		nativeSetViewMatrixDistance(_cptr, mat.getNativePtr(),distance);
 	}
 	
+	public int getWindowWidth() {
+		return mRenderer.getEmbeddedWindowWidth();
+	}
+	
+	public int getWindowHeight() {
+		return mRenderer.getEmbeddedWindowHeight();
+	}
+
+	public float width() {
+		return nativeWidth(_cptr);
+	}
+	
+	public float height() {
+		return nativeHeight(_cptr);
+	}
+	
 	public synchronized Vec3Array RaycastArray(Camera cam, Vec2Array points2D)
 	{
 		return new Vec3Array(nativeRaycast(_cptr, cam.getNativePtr(), points2D.getNativePtr()));
@@ -394,7 +415,8 @@ public class Viewer extends GLSurfaceView implements Native,
 
 	public void init(boolean translucent, int depth, int stencil, int glesVersion) {
 		//init(translucent, depth, stencil, new OSGRenderer(this), glesVersion);
-		init(translucent, depth, stencil, new OSGRenderer(asViewerBase()), glesVersion);
+		mRenderer = new OSGRenderer(asViewerBase());
+		init(translucent, depth, stencil, mRenderer, glesVersion);
 	}
 	
 	public boolean performClick()

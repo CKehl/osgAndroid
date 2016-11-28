@@ -37,24 +37,31 @@ import org.openscenegraph.osg.core.Vec2;
 import org.openscenegraph.osg.core.Vec3;
 import org.openscenegraph.osg.core.Vec2Array;
 import org.openscenegraph.osg.core.Vec3Array;
+import org.openscenegraph.osg.core.Viewport;
+
 import android.graphics.Bitmap;
 
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
 public class OffScreenViewer implements Native {
 
 	private native long nativeCreatePBufferViewer();
 	private native void nativeSetUpViewerAsEmbedded(long cptr, int x, int y, int width, int height);
-	private native void nativeSetViewport(long cptr, int x, int y, int width, int height);
-	private native void nativeSetView(long cptr, int width, int height, float fov);
+	private native void nativeSetViewportParameters(long cptr, int x, int y, int width, int height);
+	private native void nativeSetViewport(long cptr, long vpPtr);
+	private native void nativeSetPerspectiveMatrix(long cptr, int width, int height, float fov, float dNear, float dFar);
+	private native void nativeSetView(long cptr, int width, int height, float fov, float dNear, float dFar);
+	private native float nativeWidth(long cptr);
+	private native float nativeHeight(long cptr);
 	private native void nativeSetupCallback(long cptr);
 	private native long nativeGetFrame(long cptr, long matrix_ptr);
 	private native long nativeGetFrameImage(long cptr);
 	private native void nativeSetViewMatrix(long cptr, long matrix_ptr);
-	private native void nativeSetRenderMatrix(long cptr, long matrix_ptr);
 	private native void nativeDisposeViewer(long cptr);
 	private native void nativeSetSceneData(long cptr, long cptrNode);
 	private native void nativeFrame(long cptr);
@@ -71,7 +78,8 @@ public class OffScreenViewer implements Native {
 	private String mThreadOwner;
 	private GLSurfaceView.Renderer mRenderer = null;
 	
-	private int mWidth, mHeight;
+	private int _width, _height;
+	private float _fov;
 	private Bitmap mBitmap;
 
 	private long _cptr = 0;
@@ -84,7 +92,7 @@ public class OffScreenViewer implements Native {
 	public OffScreenViewer(int width, int height, float fov) {
 		Log.w(TAG, "Creating OffScreenViewer ...");
 		_cptr = nativeCreatePBufferViewer();
-		mWidth = width; mHeight = height;
+		_width = width; _height = height; _fov = fov;
 		
 		int[] s_configAttribs2 = { EGL10.EGL_RED_SIZE, 
 									8, 
@@ -213,6 +221,13 @@ public class OffScreenViewer implements Native {
 			return;
 		nativeFrame(_cptr);
 	}
+	
+	public void changeWindowExtents(int width, int height) {
+		_width = width;
+		_height = height;
+        mRenderer.onSurfaceChanged(mGL, width, height);
+        setView(width, height, _fov);
+	}
 
 	/**
 	 * Set The viewport of the scene.
@@ -223,7 +238,19 @@ public class OffScreenViewer implements Native {
 	 *            viewport height.
 	 */
 	public synchronized void setViewport(int x, int y, int width, int height) {
-		nativeSetViewport(_cptr, x, y, width, height);
+		nativeSetViewportParameters(_cptr, x, y, width, height);
+	}
+	
+	public synchronized void setViewport(Viewport viewport) {
+		nativeSetViewport(_cptr, viewport.getNativePtr());
+	}
+
+	/**
+	 * Convenience method for setting up the perspective with integrated camera
+	 */
+	public void setPerspectiveMatrix(int width, int height, float fovy)
+	{
+		nativeSetPerspectiveMatrix(_cptr, width, height, fovy, 0.1f, 1500.0f);
 	}
 	
 	/**
@@ -231,6 +258,8 @@ public class OffScreenViewer implements Native {
 	 * in an external managed window.
 	 */
 	public void setUpViewerAsEmbedded(int x, int y, int width, int height) {
+		_width = width;
+		_height = height;
 		nativeSetUpViewerAsEmbedded(_cptr, x, y, width, height);
 	}
 
@@ -246,15 +275,29 @@ public class OffScreenViewer implements Native {
 	{
 		nativeSetViewMatrix(_cptr, mat.getNativePtr());
 	}
-	
-	public void setRenderMatrix(Matrix mat)
-	{
-		nativeSetRenderMatrix(_cptr, mat.getNativePtr());
-	}
-	
+
 	public void setView(int width, int height, float fov)
 	{
-		nativeSetView(_cptr, width, height, fov);
+		_width = width;
+		_height = height;
+		nativeSetView(_cptr, width, height, fov, 0.1f, 1500.0f);
+	}
+	
+	public int getWindowWidth() {
+		return _width;
+	}
+	
+	public int getWindowHeight() {
+		return _height;
+	}
+	
+	public float width() {
+		return nativeWidth(_cptr);
+		
+	}
+	
+	public float height() {
+		return nativeHeight(_cptr);
 	}
 
 	/**
@@ -281,28 +324,36 @@ public class OffScreenViewer implements Native {
 		Image result = new Image();
 		if(image_ptr!=0)
 			result = new Image(image_ptr);
+		else
+			Log.e("OffScreenViewer", "image pointer is NULL.");
 		return result;
 	}
 	
 
     private void convertToBitmap() {
-        int[] iat = new int[mWidth * mHeight];
-        IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
-        mGL.glReadPixels(0, 0, mWidth, mHeight, mGL.GL_RGBA, mGL.GL_UNSIGNED_BYTE, ib);
-        int[] ia = ib.array();
+    	byte[] iat = new byte[_width * _height * 4];
+        ByteBuffer ib = ByteBuffer.allocate(_width * _height * 4);
+        ib.order(ByteOrder.LITTLE_ENDIAN);
+        ib.rewind();
+        mGL.glReadPixels(0, 0, _width, _height, mGL.GL_RGBA, mGL.GL_UNSIGNED_BYTE, ib);
+        
+        byte[] ia = ib.array();
 
         //Stupid !
         // Convert upside down mirror-reversed image to right-side up normal
         // image.
-        for (int i = 0; i < mHeight; i++) {
-            for (int j = 0; j < mWidth; j++) {
-                iat[(mHeight - i - 1) * mWidth + j] = ia[i * mWidth + j];
+        for (int i = 0; i < _height; i++) {
+            for (int j = 0; j < _width; j++) {
+            	for(int k = 0; k < 4; k++) {
+            		int row = j, col = ((_height-1) - i) ;
+            		iat[(col*_width*4) + (row*4) + k] = ia[i*_width*4 + j*4 + k];
+            	}
             }
         }
         
 
-        mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-        mBitmap.copyPixelsFromBuffer(IntBuffer.wrap(iat));
+        mBitmap = Bitmap.createBitmap(_width, _height, Bitmap.Config.ARGB_8888);
+        mBitmap.copyPixelsFromBuffer(ByteBuffer.wrap(iat));
     }
     
     public Bitmap GetRenderImage()

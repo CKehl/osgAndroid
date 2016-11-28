@@ -34,6 +34,8 @@ public class Camera extends Group implements Native  {
 	private static native void nativeSetViewMatrixAsLookAt(long cptr,
 			long eyecptr, long centercptr, long upcptr);
 
+	private static native long nativeGetProjectionMatrix(long cptr);
+	
 	private static native void nativeSetProjectionMatrixAsOrtho2D(long cptr,
 			double left, double right, double bottom, double top);
 
@@ -48,6 +50,7 @@ public class Camera extends Group implements Native  {
 	
 	private static native void nativeSetCullLeftMask(long cptr, boolean value);
 	private static native void nativeSetCullRightMask(long cptr, boolean value);
+	private static native long nativeGetViewport(long cptr);
 
 	private long _cptr;
 
@@ -94,6 +97,11 @@ public class Camera extends Group implements Native  {
 		nativeSetViewMatrix(_cptr, matrix.getNativePtr());
 	}
 
+	public Matrix getProjectionMatrix()
+	{
+		return new Matrix(nativeGetProjectionMatrix(_cptr));
+	}
+	
 	/**
 	 * Set to a 2D orthographic projection. See OpenGL glOrtho2D documentation
 	 * for further details.
@@ -131,5 +139,9 @@ public class Camera extends Group implements Native  {
 	 */
 	public void setCullRightMask(boolean value) {
 		nativeSetCullRightMask(_cptr, value);
+	}
+	
+	public Viewport getViewport() {
+		return new Viewport(nativeGetViewport(_cptr));
 	}
 }

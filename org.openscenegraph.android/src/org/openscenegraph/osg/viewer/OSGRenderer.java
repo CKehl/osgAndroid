@@ -25,6 +25,7 @@ import android.opengl.GLSurfaceView;
 
 public class OSGRenderer implements GLSurfaceView.Renderer {
 	protected ViewerBase _viewer;
+	protected int _width, _height;
 
 	public OSGRenderer(ViewerBase viewer) {
 		_viewer = viewer;
@@ -40,9 +41,19 @@ public class OSGRenderer implements GLSurfaceView.Renderer {
 		{
 			_viewer.setUpViewerAsEmbedded(0, 0, width, height);
 			_viewer.setViewport(0, 0, width, height);
+			_width = width;
+			_height = height;
 		}
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+	}
+	
+	public int getEmbeddedWindowWidth() {
+		return _width;
+	}
+
+	public int getEmbeddedWindowHeight() {
+		return _height;
 	}
 }
