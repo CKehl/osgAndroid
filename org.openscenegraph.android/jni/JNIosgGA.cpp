@@ -242,7 +242,7 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeD
 
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeCreateManipulator(JNIEnv *env, jclass)
 {
-	osgGA::TerrainManipulator* tm = new osgGA::TerrainManipulator();
+	osgGA::TerrainManipulator* tm = new osgGA::TerrainManipulator(osgGA::TerrainManipulator::DEFAULT_SETTINGS);
 	tm->ref();
 	return reinterpret_cast<jlong>(tm);
 }
@@ -275,6 +275,54 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeS
     {
     	tm->setTransformation(*eye, *center, *up);
     }
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeGetNode(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return 0l;
+	osg::Node* node = tm->getNode();
+	node->ref();
+	return reinterpret_cast<jlong>(node);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeGetVerticalAxisFixed(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return JNI_FALSE;
+	bool value = tm->getVerticalAxisFixed();
+	return ((value==true)?JNI_TRUE:JNI_FALSE);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeSetVerticalAxisFixed(JNIEnv *env, jclass, jlong cptr, jboolean value) {
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return;
+	tm->setVerticalAxisFixed(value);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeGetAllowThrow(JNIEnv *env, jclass, jlong cptr) {
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return JNI_FALSE;
+	bool allowThrow = tm->getAllowThrow();
+	return ((allowThrow==true)?JNI_TRUE:JNI_FALSE);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeSetAllowThrow(JNIEnv *env, jclass, jlong cptr, jboolean allowThrow) {
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return;
+	tm->setAllowThrow(allowThrow);
+}
+
+//JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeInit()
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeHome(JNIEnv *env, jclass, jlong cptr, jdouble delay) {
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return;
+	tm->home((double)delay);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

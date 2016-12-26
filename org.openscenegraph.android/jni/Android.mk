@@ -20,7 +20,6 @@ OSG_LDLIBS := \
 -losgdb_jpeg \
 -losgdb_tga \
 -losgdb_obj \
--losgdb_ply \
 -losgdb_dxf \
 -losgdb_openflight \
 -losgdb_serializers_osgvolume \
@@ -69,12 +68,16 @@ OSG_LDLIBS := \
 -ltiff \
 -ljpeg \
 -lgif \
--lpng
+-lpng #\
+-losgdb_ply \
 
 ### GLES1 build
 include $(CLEAR_VARS)
 #OSG_HEAD:=<path-to-osg-gles1-sdk>/$(TARGET_ARCH_ABI)
-OSG_SDK := /media/christian/DATA/android-osg-sdk/gles1/$(TARGET_ARCH_ABI)
+#ANDROID_GLES2_TOP=/home/christian/android_install/gles2
+#ANDROID_GLES1_TOP=/home/christian/android_install/gles1
+#OSG_SDK := /media/christian/DATA/android-osg-sdk/gles2/$(TARGET_ARCH_ABI)
+OSG_SDK := ${ANDROID_GLES1_TOP}/$(TARGET_ARCH_ABI)
 OSG_SDK_LIB_PATH:=$(OSG_SDK)/lib
 OSG_SDK_PLUGIN_PATH:=$(OSG_SDK_LIB_PATH)/osgPlugins-3.3.8
 ifneq (,$(wildcard $(OSG_SDK)/include/osg/Config))
@@ -97,7 +100,7 @@ endif
 ### GLES2 build
 include $(CLEAR_VARS)
 #OSG_SDK := <path-to-osg-gles2-sdk>/$(TARGET_ARCH_ABI)
-OSG_SDK := /media/christian/DATA/android-osg-sdk/gles2/$(TARGET_ARCH_ABI)
+OSG_SDK := ${ANDROID_GLES2_TOP}/$(TARGET_ARCH_ABI)
 OSG_SDK_LIB_PATH:=$(OSG_SDK)/lib
 OSG_SDK_PLUGIN_PATH := $(OSG_SDK_LIB_PATH)/osgPlugins-3.3.8
 ifneq ( ,$(wildcard $(OSG_SDK)/include/osg/Config))
