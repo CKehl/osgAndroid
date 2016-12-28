@@ -21,6 +21,8 @@ public class CameraManipulator extends Object {
 	private static native boolean nativeGetAutoComputeHomePosition(long cptr);
 	private static native void nativeSetAutoComputeHomePosition(long cptr, boolean autoComputeHomePosition);
 	private static native void nativeHome(long cptr);
+	private static native void nativeInit(long cptr, long eaPtr, long usPtr);
+	private static native boolean nativeHandle(long cptr, long eaPtr, long usPtr);
 	
 	public CameraManipulator()
 	{
@@ -91,5 +93,13 @@ public class CameraManipulator extends Object {
 	
 	public void home() {
 		nativeHome(_cptr);
+	}
+	
+	public void init(GUIEventAdapter ea, GUIActionAdapter us) {
+		nativeInit(_cptr, ea.getNativePtr(), us.getNativePtr());
+	}
+	
+	public boolean handle(GUIEventAdapter ea, GUIActionAdapter us) {
+		return nativeHandle(_cptr, ea.getNativePtr(), us.getNativePtr());
 	}
 }

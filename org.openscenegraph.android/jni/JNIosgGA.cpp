@@ -39,6 +39,7 @@
 #include "GLES2ShaderGenVisitor.h"
 
 #define  LOG_TAG    "org.openscenegraph.osg.ga"
+#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
@@ -56,6 +57,38 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_GUIEventAdapter_nativeDisp
 		return;
 	ea->unref();
 }
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_GUIEventAdapter_nativeCreateEventAdapter(JNIEnv* env, jclass) {
+	osgGA::GUIEventAdapter* ea = new osgGA::GUIEventAdapter();
+	if(ea==NULL)
+		return 0l;
+	ea->ref();
+	return reinterpret_cast<jlong>(ea);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// GUIActionAdapter
+///////////////////////////////////////////////////////////////////////////////
+//JNIEXPORT long JNICALL Java_org_openscenegraph_osg_ga_GUIActionAdapter_nativeCreateActionAdapter(JNIEnv* env, jclass) {
+//	osgGA::GUIActionAdapter* us = new osgGA::GUIActionAdapter();
+//	if(us==NULL)
+//		return 0l;
+//	us->ref();
+//	return reinterpret_cast<jlong>(us);
+//}
+//
+//JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_GUIActionAdapter_nativeDispose(JNIEnv* env, jclass, jlong cptr) {
+//	osgGA::GUIActionAdapter* us = reinterpret_cast<osgGA::GUIActionAdapter*>(cptr);
+//	if(us == NULL)
+//		return;
+//	us->unref();
+//}
+//=============================================================================
+
+///////////////////////////////////////////////////////////////////////////////
+// GUIEventHandler
+///////////////////////////////////////////////////////////////////////////////
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -286,6 +319,31 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_native
 	return reinterpret_cast<jlong>(node);
 }
 
+//JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeIntersect(JNIEnv* env, jclass, jlong cptr, jlong startPtr, jlong endPtr, jlong intersectionPtr) {
+//	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(tm);
+//	if(tm==NULL)
+//		return JNI_FALSE;
+//	RefVec3* startRef = reinterpret_cast<RefVec3*>(startPtr);
+//	if(startRef==NULL)
+//		return JNI_FALSE;
+//	RefVec3* endRef = reinterpret_cast<RefVec3*>(endPtr);
+//	if(endRef==NULL)
+//		return JNI_FALSE;
+//	RefVec3* intersectionRef = reinterpret_cast<RefVec3*>(intersectionPtr);
+//	if(intersectionRef==NULL)
+//		return JNI_FALSE;
+//	osg::Vec3d start(startRef->x(), startRef->y(), startRef->z());
+//	osg::Vec3d end(endRef->x(), endRef->y(), endRef->z());
+//	osg::Vec3d intersection;
+//	bool result = tm->intersect(start, end, intersection);
+//	jboolean ret = JNI_FALSE;
+//	if(result) {
+//		intersectionRef->set(intersection.x(), intersection.y(), intersection.z());
+//		ret = JNI_TRUE;
+//	}
+//	return ret;
+//}
+
 JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeGetVerticalAxisFixed(JNIEnv *env, jclass, jlong cptr) {
 	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
 	if(tm==NULL)
@@ -315,8 +373,6 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeS
 		return;
 	tm->setAllowThrow(allowThrow);
 }
-
-//JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeInit()
 
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeHome(JNIEnv *env, jclass, jlong cptr, jdouble delay) {
 	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
@@ -474,7 +530,7 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeG
 JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeGetAutoComputeHomePosition(JNIEnv *env, jclass, jlong cptr) {
 	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
 	if(cm==NULL)
-		return 0l;
+		return JNI_FALSE;
 	bool flag = cm->getAutoComputeHomePosition();
 	return ((flag==true)?JNI_TRUE:JNI_FALSE);
 }
@@ -490,6 +546,33 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeHo
 	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
 	if(cm!=NULL)
 		cm->home(0.0);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeInit(JNIEnv* env, jclass, jlong cptr, jlong eaPtr, jlong usPtr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return;
+	osgGA::GUIEventAdapter* ea = reinterpret_cast<osgGA::GUIEventAdapter*>(eaPtr);
+	if(ea==NULL)
+		return;
+	osgGA::GUIActionAdapter* us = reinterpret_cast<osgGA::GUIActionAdapter*>(usPtr);
+	if(us==NULL)
+		return;
+	cm->init(*ea, *us);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_ga_CameraManipulator_nativeHandle(JNIEnv* env, jclass, jlong cptr, jlong eaPtr, jlong usPtr) {
+	osgGA::CameraManipulator* cm = reinterpret_cast<osgGA::CameraManipulator*>(cptr);
+	if(cm==NULL)
+		return JNI_FALSE;
+	osgGA::GUIEventAdapter* ea = reinterpret_cast<osgGA::GUIEventAdapter*>(eaPtr);
+	if(ea==NULL)
+		return JNI_FALSE;
+	osgGA::GUIActionAdapter* us = reinterpret_cast<osgGA::GUIActionAdapter*>(usPtr);
+	if(us==NULL)
+		return JNI_FALSE;
+	bool result = cm->handle(*ea, *us);
+	return ((result==true)?JNI_TRUE:JNI_FALSE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
