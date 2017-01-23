@@ -2336,6 +2336,22 @@ JNIEXPORT jfloat JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGet(JNIEn
     return 0.f;
 }
 
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGetRotation(JNIEnv* env, jclass, jlong cptr)
+{
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(cptr);
+	osg::RefMatrixf *result = NULL;
+	if(m!=0)
+	{
+		osg::Matrixf _mat = osg::Matrixf(*m);
+		float* data = (float*)(_mat.ptr());
+		osg::Matrixf* _t = new osg::Matrixf();
+		_t->set(data[0], data[1], data[2], 0, data[4], data[5], data[6], 0, data[8], data[9], data[10], 0, 0, 0, 0, 1);
+		result = new osg::RefMatrixf(*_t);
+		result->ref();
+	}
+	return reinterpret_cast<jlong>(result);
+}
+
 JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGetTranslation(JNIEnv* env, jclass, jlong cptr)
 {
 	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(cptr);
@@ -2352,20 +2368,37 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGetTransla
 	return reinterpret_cast<jlong>(result);
 }
 
-JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGetRotation(JNIEnv* env, jclass, jlong cptr)
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGetRotationQuaternion(JNIEnv* env, jclass, jlong cptr)
 {
 	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(cptr);
-	osg::RefMatrixf *result = NULL;
+	RefQuat *q;
 	if(m!=0)
 	{
+		q = new RefQuat();
 		osg::Matrixf _mat = osg::Matrixf(*m);
-		float* data = (float*)(_mat.ptr());
-		osg::Matrixf* _t = new osg::Matrixf();
-		_t->set(data[0], data[1], data[2], 0, data[4], data[5], data[6], 0, data[8], data[9], data[10], 0, 0, 0, 0, 1);
-		result = new osg::RefMatrixf(*_t);
-		result->ref();
+		osg::Quat q_o = _mat.getRotate();
+
+		q->set(q_o.x(),q_o.y(),q_o.z(),q_o.w());
+		q->ref();
+		return reinterpret_cast<jlong>(q);
 	}
-	return reinterpret_cast<jlong>(result);
+	return 0l;
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeGetTranslationVector(JNIEnv* env, jclass, jlong cptr)
+{
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(cptr);
+    RefVec3 *r;
+
+    if(m != 0)
+    {
+    	r = new RefVec3();
+    	osg::Vec3d res = m->getTrans();
+    	r->set(float(res.x()),float(res.y()),float(res.z()));
+        r->ref();
+        return reinterpret_cast<jlong>(r);
+    }
+	return 0l;
 }
 
 JNIEXPORT jboolean JNICALL Java_org_openscenegraph_osg_core_Matrix_nativeIsIdentity(JNIEnv *, jclass, jlong cptr)

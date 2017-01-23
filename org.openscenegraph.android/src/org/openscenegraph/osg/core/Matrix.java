@@ -45,6 +45,10 @@ public class Matrix implements Native {
 	
 	private static native long nativeGetRotation(long cptr);
 	
+	private static native long nativeGetRotationQuaternion(long cptr);
+	
+	private static native long nativeGetTranslationVector(long cptr);
+	
 	private static native boolean nativeIsIdentity(long cptr);
 
 	private static native void nativeMakeIdentity(long cptr);
@@ -190,6 +194,16 @@ public class Matrix implements Native {
 	public Matrix getRotation()
 	{
 		return new Matrix(nativeGetRotation(_cptr));
+	}
+	
+	public Quat getRotationQuaternion()
+	{
+		return new Quat(nativeGetRotationQuaternion(_cptr));
+	}
+	
+	public Vec3 getTranslationVector()
+	{
+		return new Vec3(nativeGetTranslationVector(_cptr));
 	}
 	
 	public void makeIdentity() {
