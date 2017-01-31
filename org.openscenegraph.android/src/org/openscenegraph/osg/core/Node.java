@@ -30,6 +30,8 @@ public class Node implements Native {
 	private static native void nativeSetMode(long cptr, int mode, int value);
 	private static native void nativeSetPointSize(long cptr, float pt_size);
 	private static native void nativeSetLineWidth(long cptr, float line_size);
+	private static native void nativeRenderWF(long cptr);
+	private static native void nativeRenderSurface(long cptr);
 	private static native void nativeDirtyBound(long cptr);
 	
     public static class Values
@@ -106,6 +108,14 @@ public class Node implements Native {
 	public void setLineWidth(float width)
 	{
 		nativeSetLineWidth(_cptr, width);
+	}
+	
+	public void renderAsWF() {
+		nativeRenderWF(_cptr);
+	}
+	
+	public void renderAsSurface() {
+		nativeRenderSurface(_cptr);
 	}
 
 	public long asNode()

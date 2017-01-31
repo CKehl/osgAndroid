@@ -40,6 +40,7 @@
 #include <osg/Array>
 #include <osg/LineWidth>
 #include <osg/LightSource>
+#include <osg/PolygonMode>
 
 #include <osg/io_utils>
 #include <osgDB/ReadFile>
@@ -141,6 +142,24 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeSetLineWidth(
 	lw->setWidth((float)line_size);
 	if(node != NULL)
 		node->getOrCreateStateSet()->setAttributeAndModes(lw, osg::StateAttribute::ON);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeRenderWF(JNIEnv* env, jclass, jlong cptr) {
+	osg::Node* node = reinterpret_cast<osg::Node*>(cptr);
+	if(node==NULL)
+		return;
+	osg::PolygonMode* polymode = new osg::PolygonMode();
+	polymode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+	node->getOrCreateStateSet()->setAttributeAndModes(polymode, osg::StateAttribute::OVERRIDE||osg::StateAttribute::ON);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeRenderSurface(JNIEnv* env, jclass, jlong cptr) {
+	osg::Node* node = reinterpret_cast<osg::Node*>(cptr);
+	if(node==NULL)
+		return;
+	osg::PolygonMode* polymode = new osg::PolygonMode();
+	polymode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::FILL);
+	node->getOrCreateStateSet()->setAttributeAndModes(polymode, osg::StateAttribute::OVERRIDE||osg::StateAttribute::ON);
 }
 
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeDirtyBound(JNIEnv* env, jclass, jlong cptr)
