@@ -262,6 +262,188 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_na
 	return reinterpret_cast<jlong>(fpm);
 }
 
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeDispose(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm == NULL)
+		return;
+	fpm->unref();
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetByMatrix(JNIEnv *env, jclass, jlong cptr, jlong mptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(mptr);
+	if((fpm==NULL) || (m==NULL))
+		return;
+	osg::Matrixd mat = osg::Matrixd(*m);
+	fpm->setByMatrix(mat);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetByInverseMatrix(JNIEnv *env, jclass, jlong cptr, jlong mptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(mptr);
+	if((fpm==NULL) || (m==NULL))
+		return;
+	osg::Matrixd mat = osg::Matrixd(*m);
+	fpm->setByInverseMatrix(mat);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetMatrix(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return 0l;
+
+	osg::Matrixd mat = fpm->getMatrix();
+	osg::RefMatrixf* result = new osg::RefMatrixf(mat);
+	result->ref();
+	return reinterpret_cast<jlong>(result);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetInverseMatrix(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return 0l;
+
+	osg::Matrixd mat = fpm->getInverseMatrix();
+	osg::RefMatrixf* result = new osg::RefMatrixf(mat);
+	result->ref();
+	return reinterpret_cast<jlong>(result);
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetTransformationByRotation(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong rotation_ptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+	RefQuat *q = reinterpret_cast<RefQuat *>(rotation_ptr);
+    if(fpm != NULL && eye !=NULL && q!=NULL)
+    {
+    	fpm->setTransformation(*eye, *q);
+    }
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetTransformationByViewParameters(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong center_ptr, jlong up_ptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+    RefVec3 *center = reinterpret_cast<RefVec3 *>(center_ptr);
+    RefVec3 *up = reinterpret_cast<RefVec3 *>(up_ptr);
+    if(fpm != NULL && eye !=NULL && center != NULL && up != NULL)
+    {
+    	fpm->setTransformation(*eye, *center, *up);
+    }
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetTransformationByRotation(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong rotation_ptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+	RefQuat *q = reinterpret_cast<RefQuat *>(rotation_ptr);
+    if(fpm != NULL && eye !=NULL && q!=NULL)
+    {
+    	osg::Vec3d eyeD;
+    	osg::Quat rotationD;
+    	fpm->getTransformation(eyeD, rotationD);
+        eye->set(eyeD.x(), eyeD.y(), eyeD.z());
+        q->set(rotationD.x(), rotationD.y(), rotationD.z(), rotationD.w());
+    }
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetTransformationByViewParameters(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong center_ptr, jlong up_ptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+    RefVec3 *center = reinterpret_cast<RefVec3 *>(center_ptr);
+    RefVec3 *up = reinterpret_cast<RefVec3 *>(up_ptr);
+    if(fpm != NULL && eye !=NULL && center != NULL && up != NULL)
+    {
+    	osg::Vec3d eyeD, centerD, upD;
+    	fpm->getTransformation(eyeD, centerD, upD);
+        eye->set(eyeD.x(), eyeD.y(), eyeD.z());
+        center->set(centerD.x(), centerD.y(), centerD.z());
+        up->set(upD.x(), upD.y(), upD.z());
+    }
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetVelocity(JNIEnv *env, jclass, jlong cptr, jdouble velocity)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return;
+	fpm->setVelocity((double)velocity);
+}
+
+JNIEXPORT jdouble JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetVelocity(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return 0;
+	return fpm->getVelocity();
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetAcceleration(JNIEnv *env, jclass, jlong cptr, jdouble acceleration, jboolean relativeToModelSize)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return;
+	fpm->setAcceleration((double)acceleration, relativeToModelSize);
+}
+
+JNIEXPORT jdouble JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetAcceleration(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return 0;
+	return fpm->getAcceleration();
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetMaxVelocity(JNIEnv *env, jclass, jlong cptr, jdouble maxVelocity, jboolean relativeToModelSize)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return;
+	fpm->setMaxVelocity((double)maxVelocity, relativeToModelSize);
+}
+
+JNIEXPORT jdouble JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetMaxVelocity(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return 0;
+	return fpm->getMaxVelocity();
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeSetWheelMovement(JNIEnv *env, jclass, jlong cptr, jdouble wheelMovement, jboolean relativeToModelSize)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return;
+	fpm->setWheelMovement((double)wheelMovement, relativeToModelSize);
+}
+
+JNIEXPORT jdouble JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeGetWheelMovement(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return 0;
+	return fpm->getWheelMovement();
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_FirstPersonManipulator_nativeHome(JNIEnv *env, jclass, jlong cptr, jdouble delay)
+{
+	osgGA::FirstPersonManipulator* fpm = reinterpret_cast<osgGA::FirstPersonManipulator*>(cptr);
+	if(fpm==NULL)
+		return;
+	fpm->home((double)delay);
+}
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Terrain Manipulator
 ///////////////////////////////////////////////////////////////////////////////
@@ -289,6 +471,40 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeS
 	tm->setByMatrix(mat);
 }
 
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeSetByInverseMatrix(JNIEnv *env, jclass, jlong cptr, jlong mptr)
+{
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	osg::RefMatrixf *m = reinterpret_cast<osg::RefMatrixf *>(mptr);
+	if((tm==NULL) || (m==NULL))
+		return;
+	osg::Matrixd mat = osg::Matrixd(*m);
+	tm->setByInverseMatrix(mat);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeGetMatrix(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return 0l;
+
+	osg::Matrixd mat = tm->getMatrix();
+	osg::RefMatrixf* result = new osg::RefMatrixf(mat);
+	result->ref();
+	return reinterpret_cast<jlong>(result);
+}
+
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeGetInverseMatrix(JNIEnv *env, jclass, jlong cptr)
+{
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+	if(tm==NULL)
+		return 0l;
+
+	osg::Matrixd mat = tm->getInverseMatrix();
+	osg::RefMatrixf* result = new osg::RefMatrixf(mat);
+	result->ref();
+	return reinterpret_cast<jlong>(result);
+}
+
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeSetNode(JNIEnv *env, jclass, jlong cptr, jlong nptr)
 {
 	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
@@ -307,6 +523,22 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeS
     if(tm != NULL && eye !=NULL && center != NULL && up != NULL)
     {
     	tm->setTransformation(*eye, *center, *up);
+    }
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_ga_TerrainManipulator_nativeGetTransformation(JNIEnv *env, jclass, jlong cptr, jlong eye_ptr, jlong center_ptr, jlong up_ptr)
+{
+	osgGA::TerrainManipulator* tm = reinterpret_cast<osgGA::TerrainManipulator*>(cptr);
+    RefVec3 *eye = reinterpret_cast<RefVec3 *>(eye_ptr);
+    RefVec3 *center = reinterpret_cast<RefVec3 *>(center_ptr);
+    RefVec3 *up = reinterpret_cast<RefVec3 *>(up_ptr);
+    if(tm != NULL && eye !=NULL && center != NULL && up != NULL)
+    {
+    	osg::Vec3d eyeD, centerD, upD;
+    	tm->getTransformation(eyeD, centerD, upD);
+        eye->set(eyeD.x(), eyeD.y(), eyeD.z());
+        center->set(centerD.x(), centerD.y(), centerD.z());
+        up->set(upD.x(), upD.y(), upD.z());
     }
 }
 
