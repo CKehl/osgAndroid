@@ -117,10 +117,10 @@ public class Viewer extends GLSurfaceView implements Native,
     protected native void native_home(long cptr);
     
     protected native long nativeRaycastArray(long viewer_cptr, long camera_ptr, long vec2array_cptr);
-    
     protected native long nativeRaycast(long viewer_cptr, long camera_ptr, long vec2_cptr);
-    
     protected native long nativeRaycastViewCenter(long viewer_cptr, long camera_ptr);
+    // screenCoord - Vec2; screenspace: center = (0,0), (x,y) = [-1;1]
+    protected native long nativeRaycastScreenCoord(long viewer_cptr, long camera_ptr, long screenCoord_cptr);
 
     Context _context = null;
     private OSGRenderer mRenderer = null;
@@ -335,6 +335,11 @@ public class Viewer extends GLSurfaceView implements Native,
 	public synchronized Vec3 RaycastViewCenter(Camera cam)
 	{
 		return new Vec3(nativeRaycastViewCenter(_cptr, cam.getNativePtr()));
+	}
+	
+	public synchronized Vec3 RaycastScreenCoord(Camera cam, Vec2 screenCoord)
+	{
+		return new Vec3(nativeRaycastScreenCoord(_cptr, cam.getNativePtr(), screenCoord.getNativePtr()));
 	}
 	
 	/**

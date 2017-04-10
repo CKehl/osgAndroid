@@ -502,6 +502,41 @@ JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastV
 	return reinterpret_cast<jlong>(v3);
 }
 
+/**
+ * Raycasting screenspace points
+ * screenCoord - Vec2; screenspace: center = (0,0), (x,y) = [-1;1]
+ */
+JNIEXPORT jlong JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeRaycastScreenCoord(JNIEnv* env, jclass, jlong viewer_cptr, jlong camera_ptr, jlong screenCoord_cptr)
+{
+	RefVec3 *v3 = new RefVec3();
+	v3->ref();
+	//osg::Vec3Array* v3a = new osg::Vec3Array();
+	//v3a->ref();
+
+	osgViewer::View* viewer = reinterpret_cast<osgViewer::View*>(viewer_cptr);
+	osg::Camera* cam = reinterpret_cast<osg::Camera*>(camera_ptr);
+	RefVec2* screenCoord = reinterpret_cast<RefVec2*>(screenCoord_cptr);
+	osg::Vec2 center;
+	osg::Viewport* viewport = cam->getViewport();
+	osg::Vec2* v = new osg::Vec2();
+	double w = viewport->width(), h = viewport->height();
+	double w2 = w/2.0, h2 = h/2.0;
+	v->set(w2+(screenCoord->x()*w2), h2+(screenCoord->y()*h2));
+	osgUtil::LineSegmentIntersector::Intersections intersections;
+
+	viewer->computeIntersections(const_cast<const osg::Camera*>(cam), osgUtil::Intersector::WINDOW, v->x(), v->y(), intersections);
+	if(intersections.empty() == false)
+	{
+		v3->set(intersections.begin()->getWorldIntersectPoint().x(), intersections.begin()->getWorldIntersectPoint().y(), intersections.begin()->getWorldIntersectPoint().z());
+	}
+	else
+	{
+		v3->set(DBL_MAX,DBL_MAX,DBL_MAX);
+	}
+	delete v;
+	return reinterpret_cast<jlong>(v3);
+}
+
 //////////////////////////
 // osg::OffScreenViewer //
 //////////////////////////
