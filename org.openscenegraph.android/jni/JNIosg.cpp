@@ -42,6 +42,10 @@
 #include <osg/LightSource>
 #include <osg/PolygonMode>
 
+#include <osg/Program>
+#include <osg/Shader>
+#include "testShaders.h"
+
 #include <osg/io_utils>
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
@@ -123,6 +127,24 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeSetMode(JNIEn
 	{
 		node->getOrCreateStateSet()->setMode( static_cast<GLenum>(mode),
 				static_cast<unsigned int>(value));
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_core_Node_nativeTestShader(JNIEnv *env, jclass, jlong cptr)
+{
+	osg::Node *node = reinterpret_cast<osg::Node *>(cptr);
+	if(node != 0)
+	{
+		osg::StateSet* state = node->getOrCreateStateSet();
+		osg::Shader* vshader = new osg::Shader(osg::Shader::VERTEX, gVertexShader);
+		osg::Shader* fshader = new osg::Shader(osg::Shader::FRAGMENT, gFragmentShader);
+        osg::Program * prog = new osg::Program;
+        prog->addShader(vshader);
+        prog->addShader(fshader);
+
+		//state->setUseModelViewAndProjectionUniforms(true);
+		//state->setUseVertexAttributeAliasing(true);
+		state->setAttribute(prog);
 	}
 }
 

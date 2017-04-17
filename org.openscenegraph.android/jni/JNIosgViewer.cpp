@@ -227,6 +227,19 @@ JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetViewMa
     }
 }
 
+JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeFixedFuncReplicaGLES2(JNIEnv* env, jclass, jlong cptr) {
+	osgViewer::Viewer *viewer = reinterpret_cast<osgViewer::Viewer *>(cptr);
+	if(viewer != 0) {
+	    osgViewer::Viewer::Windows windows;
+	    viewer->getWindows(windows);
+	    for(osgViewer::Viewer::Windows::iterator itr = windows.begin();itr != windows.end();++itr)
+	    {
+	      (*itr)->getState()->setUseModelViewAndProjectionUniforms(true);
+	      (*itr)->getState()->setUseVertexAttributeAliasing(true);
+	    }
+	}
+}
+
 JNIEXPORT void JNICALL Java_org_openscenegraph_osg_viewer_Viewer_nativeSetViewMatrixDistance(JNIEnv* env, jclass, jlong cptr, jlong matrix_ptr, jdouble distance)
 {
 

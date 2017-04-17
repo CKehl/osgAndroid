@@ -42,10 +42,21 @@ public class OSGActivity extends Activity {
 		try {
 			Library.initLibrary("gles1");
 			mView = new Viewer(this);
-			mView.init(false, 16, 8, Viewer.GLES1_CONTEXT);
-			File externalStorage = Environment.getExternalStorageDirectory();
-			String path = externalStorage + "/models/cessna.osg";
 
+
+			
+			if(Library.checkGL20Support(this)) {
+				mView.init(false, 16, 8, Viewer.GLES2_CONTEXT);
+				mView.fixedFuncReplicaGLES2();
+			} else {
+				mView.init(false, 16, 8, Viewer.GLES1_CONTEXT);
+			}
+
+			
+			File externalStorage = Environment.getExternalStorageDirectory();
+			//String path = externalStorage + "/models/cessna.osg";
+			//String path = externalStorage + "/models/Bryggen/Bryggen_side1_40_Textured_2.ive";
+			String path = externalStorage + "/models/bigball.osg";
 			mView.setSceneData(/*GLES2ShaderConverter.apply(mView, */ReadFile.readNodeFile(path)/*)*/);
 			//mView.setSceneData(new Group());
 			mView.setDefaultSettings();

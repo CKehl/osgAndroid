@@ -28,6 +28,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
 
+import org.openscenegraph.osg.Library;
 import org.openscenegraph.osg.Native;
 import org.openscenegraph.osg.core.Camera;
 import org.openscenegraph.osg.core.Image;
@@ -89,6 +90,10 @@ public class OffScreenViewer implements Native {
 		return _cptr;
 	}
 
+	public static final int GLES1_CONTEXT = 0x00010001;
+	public static final int GLES2_CONTEXT = 0x00020000;
+	public static final int GLES3_CONTEXT = 0x00030000; // not supported
+	
 	public OffScreenViewer(int width, int height, float fov) {
 		Log.w(TAG, "Creating OffScreenViewer ...");
 		_cptr = nativeCreatePBufferViewer();
@@ -118,9 +123,102 @@ public class OffScreenViewer implements Native {
         mEGL = (EGL10) EGLContext.getEGL();
         eglDisp = mEGL.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
         mEGL.eglInitialize(eglDisp, version);
+        
         ConfigChooserGLES11 selection = new ConfigChooserGLES11(8, 8, 8, 8, 16, 8);
         selection.setAttributes(s_configAttribs2);
         eglConf = selection.chooseConfig(mEGL, eglDisp);
+
+        //int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
+        //int[] ctxAttr = {
+        //        EGL_CONTEXT_CLIENT_VERSION, 2,
+        //        EGL10.EGL_NONE
+        //};
+        //int[] ctxAttr = {};
+        //eglCtx = mEGL.eglCreateContext(eglDisp, eglConf, EGL10.EGL_NO_CONTEXT, ctxAttr);
+        eglCtx = mEGL.eglCreateContext(eglDisp, eglConf, EGL10.EGL_NO_CONTEXT, null);
+
+        eglSurface = mEGL.eglCreatePbufferSurface(eglDisp, eglConf, surfaceAttr);
+        mEGL.eglMakeCurrent(eglDisp, eglSurface, eglSurface, eglCtx);
+
+        mGL = (GL10) eglCtx.getGL();
+
+        // Record thread owner of OpenGL context
+        mThreadOwner = Thread.currentThread().getName();
+        
+        
+        /*
+         * set up renderer
+         */
+        mRenderer = new OSGRenderer(asViewerBase());
+        // Does this thread own the OpenGL context?
+        if (!Thread.currentThread().getName().equals(mThreadOwner)) {
+            Log.e(TAG, "setRenderer: This thread does not own the OpenGL context.");
+            return;
+        }
+
+        // Call the renderer initialization routines
+        mRenderer.onSurfaceCreated(mGL, eglConf);
+        mRenderer.onSurfaceChanged(mGL, width, height);
+        //float fov = new Float(2.0*Math.atan(4.6032/(2.0*3.97)));
+        setView(width, height, fov);
+        nativeSetupCallback(_cptr);
+	}
+
+	private static int EGL_OPENGL_ES1_BIT = 1;  // GLES1
+	private static int EGL_OPENGL_ES2_BIT = 4;  // GLES2
+	public OffScreenViewer(int width, int height, float fov, int glesVersion) {
+		Log.w(TAG, "Creating OffScreenViewer ...");
+		_cptr = nativeCreatePBufferViewer();
+		_width = width; _height = height; _fov = fov;
+		
+
+		int[] s_configAttribs2 = { EGL10.EGL_RED_SIZE, 
+									8, 
+									EGL10.EGL_GREEN_SIZE, 
+									8, 
+									EGL10.EGL_BLUE_SIZE, 
+									8, 
+									EGL10.EGL_ALPHA_SIZE, 
+									8, 
+									EGL10.EGL_SURFACE_TYPE,
+									EGL10.EGL_PBUFFER_BIT,
+									EGL10.EGL_RENDERABLE_TYPE,
+									EGL_OPENGL_ES1_BIT,
+									EGL10.EGL_NONE };
+		
+		int surfaceAttr[] = {
+				EGL10.EGL_WIDTH, width,
+				EGL10.EGL_HEIGHT, height,
+				EGL10.EGL_NONE
+		};
+		
+		int[] version = new int[2];
+		
+        // No error checking performed, minimum required code to elucidate logic
+        mEGL = (EGL10) EGLContext.getEGL();
+        eglDisp = mEGL.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
+        mEGL.eglInitialize(eglDisp, version);
+       
+		//private static int EGL_OPENGL_ES_BIT = 1;
+		//private static int EGL_OPENGL_ES_BIT = 4;  // GLES2
+        switch(glesVersion) {
+        case GLES1_CONTEXT: {
+        	Library.initLibrary("gles1");
+    		s_configAttribs2[11] = EGL_OPENGL_ES1_BIT;
+        	ConfigChooserGLES11 selection = new ConfigChooserGLES11(8, 8, 8, 8, 16, 8);
+            selection.setAttributes(s_configAttribs2);
+            eglConf = selection.chooseConfig(mEGL, eglDisp);
+        }
+        case GLES2_CONTEXT: {
+        	Library.initLibrary("gles2");
+        	s_configAttribs2[11] = EGL_OPENGL_ES2_BIT;
+        	ConfigChooserGLES20 selection = new ConfigChooserGLES20(8, 8, 8, 8, 16, 8);
+            selection.setAttributes(s_configAttribs2);
+            eglConf = selection.chooseConfig(mEGL, eglDisp);
+        }
+        }
+        
+
 
         //int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
         //int[] ctxAttr = {
@@ -447,6 +545,183 @@ public class OffScreenViewer implements Native {
 		
 				if (r == mRedSize && g == mGreenSize && b == mBlueSize
 						&& a == mAlphaSize && ((sf & EGL10.EGL_PBUFFER_BIT) > 0) )
+					return config;
+			}
+			return null;
+		}
+		
+		private int findConfigAttrib(EGL10 egl, EGLDisplay display,
+				EGLConfig config, int attribute, int defaultValue) {
+		
+			if (egl.eglGetConfigAttrib(display, config, attribute, mValue)) {
+				return mValue[0];
+			}
+			return defaultValue;
+		}
+		
+		private void printConfigs(EGL10 egl, EGLDisplay display,
+				EGLConfig[] configs) {
+			int numConfigs = configs.length;
+			Log.w(TAG, String.format("%d configurations", numConfigs));
+			for (int i = 0; i < numConfigs; i++) {
+				Log.w(TAG, String.format("Configuration %d:\n", i));
+				printConfig(egl, display, configs[i]);
+			}
+		}
+		
+		private void printConfig(EGL10 egl, EGLDisplay display, EGLConfig config) {
+			int[] attributes = { EGL10.EGL_BUFFER_SIZE, EGL10.EGL_ALPHA_SIZE,
+					EGL10.EGL_BLUE_SIZE,
+					EGL10.EGL_GREEN_SIZE,
+					EGL10.EGL_RED_SIZE,
+					EGL10.EGL_DEPTH_SIZE,
+					EGL10.EGL_STENCIL_SIZE,
+					EGL10.EGL_CONFIG_CAVEAT,
+					EGL10.EGL_CONFIG_ID,
+					EGL10.EGL_LEVEL,
+					EGL10.EGL_MAX_PBUFFER_HEIGHT,
+					EGL10.EGL_MAX_PBUFFER_PIXELS,
+					EGL10.EGL_MAX_PBUFFER_WIDTH,
+					EGL10.EGL_NATIVE_RENDERABLE,
+					EGL10.EGL_NATIVE_VISUAL_ID,
+					EGL10.EGL_NATIVE_VISUAL_TYPE,
+					0x3030, // EGL10.EGL_PRESERVED_RESOURCES,
+					EGL10.EGL_SAMPLES,
+					EGL10.EGL_SAMPLE_BUFFERS,
+					EGL10.EGL_SURFACE_TYPE,
+					EGL10.EGL_TRANSPARENT_TYPE,
+					EGL10.EGL_TRANSPARENT_RED_VALUE,
+					EGL10.EGL_TRANSPARENT_GREEN_VALUE,
+					EGL10.EGL_TRANSPARENT_BLUE_VALUE,
+					0x3039, // EGL10.EGL_BIND_TO_TEXTURE_RGB,
+					0x303A, // EGL10.EGL_BIND_TO_TEXTURE_RGBA,
+					0x303B, // EGL10.EGL_MIN_SWAP_INTERVAL,
+					0x303C, // EGL10.EGL_MAX_SWAP_INTERVAL,
+					EGL10.EGL_LUMINANCE_SIZE, EGL10.EGL_ALPHA_MASK_SIZE,
+					EGL10.EGL_COLOR_BUFFER_TYPE, EGL10.EGL_RENDERABLE_TYPE,
+					0x3042 // EGL10.EGL_CONFORMANT
+			};
+			String[] names = { "EGL_BUFFER_SIZE", "EGL_ALPHA_SIZE",
+					"EGL_BLUE_SIZE", "EGL_GREEN_SIZE", "EGL_RED_SIZE",
+					"EGL_DEPTH_SIZE", "EGL_STENCIL_SIZE", "EGL_CONFIG_CAVEAT",
+					"EGL_CONFIG_ID", "EGL_LEVEL", "EGL_MAX_PBUFFER_HEIGHT",
+					"EGL_MAX_PBUFFER_PIXELS", "EGL_MAX_PBUFFER_WIDTH",
+					"EGL_NATIVE_RENDERABLE", "EGL_NATIVE_VISUAL_ID",
+					"EGL_NATIVE_VISUAL_TYPE", "EGL_PRESERVED_RESOURCES",
+					"EGL_SAMPLES", "EGL_SAMPLE_BUFFERS", "EGL_SURFACE_TYPE",
+					"EGL_TRANSPARENT_TYPE", "EGL_TRANSPARENT_RED_VALUE",
+					"EGL_TRANSPARENT_GREEN_VALUE",
+					"EGL_TRANSPARENT_BLUE_VALUE", "EGL_BIND_TO_TEXTURE_RGB",
+					"EGL_BIND_TO_TEXTURE_RGBA", "EGL_MIN_SWAP_INTERVAL",
+					"EGL_MAX_SWAP_INTERVAL", "EGL_LUMINANCE_SIZE",
+					"EGL_ALPHA_MASK_SIZE", "EGL_COLOR_BUFFER_TYPE",
+					"EGL_RENDERABLE_TYPE", "EGL_CONFORMANT" };
+			int[] value = new int[1];
+			for (int i = 0; i < attributes.length; i++) {
+				int attribute = attributes[i];
+				String name = names[i];
+				if (egl.eglGetConfigAttrib(display, config, attribute, value)) {
+					Log.w(TAG, String.format("  %s: %d\n", name, value[0]));
+				} else {
+					// Log.w(TAG, String.format("  %s: failed\n", name));
+					while (egl.eglGetError() != EGL10.EGL_SUCCESS)
+						;
+				}
+			}
+		}
+		
+		// Subclasses can adjust these values:
+		protected int mRedSize;
+		protected int mGreenSize;
+		protected int mBlueSize;
+		protected int mAlphaSize;
+		protected int mDepthSize;
+		protected int mStencilSize;
+		private int[] mValue = new int[1];
+	}
+
+	private static class ConfigChooserGLES20 implements GLSurfaceView.EGLConfigChooser {
+		public ConfigChooserGLES20(int r, int g, int b, int a, int depth, int stencil) {
+			mRedSize = r;
+			mGreenSize = g;
+			mBlueSize = b;
+			mAlphaSize = a;
+			mDepthSize = depth;
+			mStencilSize = stencil;
+		}
+		
+		/*
+		 * This EGL config specification is used to specify 1.x rendering. We
+		 * use a minimum size of 4 bits for red/green/blue, but will perform
+		 * actual matching in chooseConfig() below.
+		 */
+		//private static int EGL_OPENGL_ES_BIT = 1;
+		//private static int EGL_OPENGL_ES_BIT = 4;  // GLES2
+		//private static int[] s_configAttribs2 = { EGL10.EGL_RED_SIZE, 4,
+		//		EGL10.EGL_GREEN_SIZE, 4, EGL10.EGL_BLUE_SIZE, 4,
+		//		EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT, EGL10.EGL_NONE };
+		
+		public int[] s_configAttribs2;
+		public void setAttributes(int[] attributes)
+		{
+			s_configAttribs2 = attributes;
+		}
+		
+		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
+		
+			/*
+			 * Get the number of minimally matching EGL configurations
+			 */
+			int[] num_config = new int[1];
+			egl.eglChooseConfig(display, s_configAttribs2, null, 0, num_config);
+		
+			int numConfigs = num_config[0];
+		
+			if (numConfigs <= 0) {
+				throw new IllegalArgumentException(
+						"No configs match configSpec");
+			}
+		
+			/*
+			 * Allocate then read the array of minimally matching EGL configs
+			 */
+			EGLConfig[] configs = new EGLConfig[numConfigs];
+			egl.eglChooseConfig(display, s_configAttribs2, configs, numConfigs,
+					num_config);
+		
+			if (DEBUG) {
+				printConfigs(egl, display, configs);
+			}
+			/*
+			 * Now return the "best" one
+			 */
+			return chooseConfig(egl, display, configs);
+		}
+		
+		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
+				EGLConfig[] configs) {
+			for (EGLConfig config : configs) {
+				int d = findConfigAttrib(egl, display, config,
+						EGL10.EGL_DEPTH_SIZE, 0);
+				int s = findConfigAttrib(egl, display, config,
+						EGL10.EGL_STENCIL_SIZE, 0);
+		
+				// We need at least mDepthSize and mStencilSize bits
+				if (d < mDepthSize || s < mStencilSize)
+					continue;
+		
+				// We want an *exact* match for red/green/blue/alpha
+				int r = findConfigAttrib(egl, display, config,
+						EGL10.EGL_RED_SIZE, 0);
+				int g = findConfigAttrib(egl, display, config,
+						EGL10.EGL_GREEN_SIZE, 0);
+				int b = findConfigAttrib(egl, display, config,
+						EGL10.EGL_BLUE_SIZE, 0);
+				int a = findConfigAttrib(egl, display, config,
+						EGL10.EGL_ALPHA_SIZE, 0);
+		
+				if (r == mRedSize && g == mGreenSize && b == mBlueSize
+						&& a == mAlphaSize)
 					return config;
 			}
 			return null;

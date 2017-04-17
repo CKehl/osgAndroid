@@ -28,6 +28,7 @@ public class Node implements Native {
 	private static native void nativeSetTexture2D(long cptr, long cptrimage);
 	private static native void nativeSetTexture(long cptr, long texture_cptr, int tex_unit);
 	private static native void nativeSetMode(long cptr, int mode, int value);
+	private static native void nativeTestShader(long cptr);
 	private static native void nativeSetPointSize(long cptr, float pt_size);
 	private static native void nativeSetLineWidth(long cptr, float line_size);
 	private static native void nativeRenderWF(long cptr);
@@ -98,6 +99,10 @@ public class Node implements Native {
 	 */
 	public void setMode(int mode, int value) {
 		nativeSetMode(_cptr,mode,value);
+	}
+	
+	public void testShaders() {
+		nativeTestShader(_cptr);
 	}
 	
 	public void setPointSize(float pointsize)

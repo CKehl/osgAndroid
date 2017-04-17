@@ -40,6 +40,7 @@ public class OSGRenderer implements GLSurfaceView.Renderer {
 		if(_viewer.getNativePtr()!=0)
 		{
 			_viewer.setUpViewerAsEmbedded(0, 0, width, height);
+			//viewer->realize()
 			_viewer.setViewport(0, 0, width, height);
 			_width = width;
 			_height = height;
